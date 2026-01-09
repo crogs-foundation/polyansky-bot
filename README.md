@@ -20,7 +20,7 @@ Telegram Bot for Vyatskie Polyany
 ## Requirements
 
 - Tested on **Fedora 42**
-- Requires **Python 3.14**
+- Requires **Python 3.13**
 - All dependencies are listed in [`pyproject.toml`](./pyproject.toml)
 
 ---

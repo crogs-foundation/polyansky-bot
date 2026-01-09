@@ -11,6 +11,8 @@ aiohttp==3.13.3
     # via aiogram
 aiosignal==1.4.0
     # via aiohttp
+aiosqlite==0.22.1
+    # via polyansky-bot
 annotated-types==0.7.0
     # via pydantic
 attrs==25.4.0
@@ -19,20 +21,30 @@ certifi==2026.1.4
     # via aiogram
 cfgv==3.5.0
     # via pre-commit
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via loguru
 distlib==0.4.0
     # via virtualenv
+environs==14.5.0
+    # via polyansky-bot
 filelock==3.20.2
     # via virtualenv
 frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
+greenlet==3.3.0
+    # via sqlalchemy
 identify==2.6.15
     # via pre-commit
 idna==3.11
     # via yarl
+loguru==0.7.3
+    # via polyansky-bot
 magic-filter==1.0.12
     # via aiogram
+marshmallow==4.2.0
+    # via environs
 multidict==6.7.0
     # via
     #   aiohttp
@@ -50,19 +62,28 @@ pydantic==2.12.5
     # via aiogram
 pydantic-core==2.41.5
     # via pydantic
+python-dotenv==1.2.1
+    # via environs
 pyyaml==6.0.3
     # via pre-commit
+rapidfuzz==3.14.3
+    # via polyansky-bot
 ruff==0.14.11
+sqlalchemy==2.0.45
+    # via polyansky-bot
 ty==0.0.10
 typing-extensions==4.15.0
     # via
     #   aiogram
     #   pydantic
     #   pydantic-core
+    #   sqlalchemy
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
 virtualenv==20.36.0
     # via pre-commit
+win32-setctime==1.2.0 ; sys_platform == 'win32'
+    # via loguru
 yarl==1.22.0
     # via aiohttp

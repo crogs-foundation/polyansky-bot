@@ -1,0 +1,236 @@
+"""Inline keyboard factory functions."""
+
+from typing import List, Optional
+
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from bot.keyboards.callbacks import (
+    InputMethod,
+    InputMethodCallback,
+    ListNavigationCallback,
+    RouteAction,
+    RouteMenuCallback,
+    StopListCallback,
+    TimePresetCallback,
+)
+from database.models import BusStop
+
+
+def build_main_menu_keyboard() -> InlineKeyboardMarkup:
+    """Build main menu keyboard with 'Автобусы' button."""
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="🚌 Автобусы",
+        callback_data=RouteMenuCallback(action=RouteAction.START_BUSES),
+    )
+    return builder.as_markup()
+
+
+def build_route_menu_keyboard(
+    origin: Optional[str] = None,
+    destination: Optional[str] = None,
+    departure: str = "Сейчас",
+    arrival: str = "Как можно скорее",
+) -> InlineKeyboardMarkup:
+    """
+    Build route planning menu with current values.
+
+    Creates 4-row table layout with labels and values.
+    Entire row is clickable for editing.
+
+    Args:
+        origin: Origin stop name or "Не указано".
+        destination: Destination stop name or "Не указано".
+        departure: Departure time string.
+        arrival: Arrival time string.
+
+    Returns:
+        Inline keyboard markup.
+    """
+    origin_text = origin or "Не указано"
+    destination_text = destination or "Не указано"
+
+    builder = InlineKeyboardBuilder()
+
+    # Row 1: Origin (Откуда)
+    builder.button(
+        text=f"📍 Откуда: {origin_text}",
+        callback_data=RouteMenuCallback(action=RouteAction.EDIT_ORIGIN),
+    )
+    builder.adjust(1)
+
+    # Row 2: Destination (Куда)
+    builder.button(
+        text=f"📍 Куда: {destination_text}",
+        callback_data=RouteMenuCallback(action=RouteAction.EDIT_DESTINATION),
+    )
+    builder.adjust(1)
+
+    # Row 3: Departure time
+    builder.button(
+        text=f"🕐 Отправление: {departure}",
+        callback_data=RouteMenuCallback(action=RouteAction.EDIT_DEPARTURE),
+    )
+    builder.adjust(1)
+
+    # Row 4: Arrival time
+    builder.button(
+        text=f"🕐 Прибытие: {arrival}",
+        callback_data=RouteMenuCallback(action=RouteAction.EDIT_ARRIVAL),
+    )
+    builder.adjust(1)
+
+    # Row 5: Action buttons
+    builder.button(
+        text="❌ Отмена",
+        callback_data=RouteMenuCallback(action=RouteAction.CANCEL),
+    )
+    builder.button(
+        text="✅ Подтвердить",
+        callback_data=RouteMenuCallback(action=RouteAction.CONFIRM),
+    )
+    builder.adjust(2)
+
+    return builder.as_markup()
+
+
+def build_input_method_keyboard(field: str) -> InlineKeyboardMarkup:
+    """
+    Build keyboard for selecting input method.
+
+    Args:
+        field: 'origin' or 'destination'.
+
+    Returns:
+        Keyboard with 3 input method options.
+    """
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="📍 Указать на карте",
+        callback_data=InputMethodCallback(field=field, method=InputMethod.LOCATION),
+    )
+    builder.button(
+        text="📋 Выбрать из списка",
+        callback_data=InputMethodCallback(field=field, method=InputMethod.LIST),
+    )
+    builder.button(
+        text="🔍 Найти по названию",
+        callback_data=InputMethodCallback(field=field, method=InputMethod.SEARCH),
+    )
+    builder.button(
+        text="« Назад",
+        callback_data=RouteMenuCallback(action=RouteAction.BACK),  # FIXED
+    )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def build_stop_list_keyboard(
+    stops: List[BusStop], field: str, page: int = 0, total_pages: int = 1
+) -> InlineKeyboardMarkup:
+    """
+    Build paginated list of bus stops.
+
+    Shows max 5 stops per page with navigation buttons.
+
+    Args:
+        stops: List of bus stops to display (max 5).
+        field: 'origin' or 'destination'.
+        page: Current page number (0-indexed).
+        total_pages: Total number of pages.
+
+    Returns:
+        Keyboard with stop buttons and navigation.
+    """
+    builder = InlineKeyboardBuilder()
+
+    # Add stop buttons (max 5)
+    for stop in stops[:5]:
+        button_text = f"{stop.name}"
+        if len(stop.address) > 30:
+            button_text += f" ({stop.address[:27]}...)"
+        else:
+            button_text += f" ({stop.address})"
+
+        builder.button(
+            text=button_text, callback_data=StopListCallback(stop_id=stop.id, field=field)
+        )
+        builder.adjust(1)
+
+    # Add navigation row
+    nav_buttons = []
+    if page > 0:
+        nav_buttons.append(
+            InlineKeyboardButton(
+                text="◀️ Назад",
+                callback_data=ListNavigationCallback(page=page - 1, field=field).pack(),
+            )
+        )
+
+    nav_buttons.append(
+        InlineKeyboardButton(text=f"{page + 1}/{total_pages}", callback_data="page_info")
+    )
+
+    if page < total_pages - 1:
+        nav_buttons.append(
+            InlineKeyboardButton(
+                text="Вперёд ▶️",
+                callback_data=ListNavigationCallback(page=page + 1, field=field).pack(),
+            )
+        )
+
+    builder.row(*nav_buttons)
+
+    # Back button (not cancel)
+    builder.button(
+        text="« Назад",
+        callback_data=RouteMenuCallback(action=RouteAction.BACK),  # FIXED
+    )
+    builder.adjust(1)
+
+    return builder.as_markup()
+
+
+def build_time_preset_keyboard(field: str) -> InlineKeyboardMarkup:
+    """
+    Build keyboard for time selection.
+
+    Offers presets and custom input option.
+
+    Args:
+        field: 'departure' or 'arrival'.
+
+    Returns:
+        Keyboard with time options.
+    """
+    builder = InlineKeyboardBuilder()
+
+    if field == "departure":
+        builder.button(
+            text="🕐 Сейчас",
+            callback_data=TimePresetCallback(field=field, preset="now"),
+        )
+        builder.button(
+            text="⌨️ Указать время",
+            callback_data=TimePresetCallback(field=field, preset="custom"),
+        )
+    else:  # arrival
+        builder.button(
+            text="⚡ Как можно скорее",
+            callback_data=TimePresetCallback(field=field, preset="asap"),
+        )
+        builder.button(
+            text="⌨️ Указать время",
+            callback_data=TimePresetCallback(field=field, preset="custom"),
+        )
+
+    builder.button(
+        text="« Назад",
+        callback_data=RouteMenuCallback(action=RouteAction.BACK),  # FIXED
+    )
+    builder.adjust(1)
+
+    return builder.as_markup()
