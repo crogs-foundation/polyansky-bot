@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 from typing import List, Optional
 
+import loguru
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -65,8 +66,8 @@ class RouteFinder:
         Find possible routes between two stops.
 
         Args:
-            origin_id: Origin bus stop ID.
-            destination_id: Destination bus stop ID.
+            origin_code: Origin bus stop ID.
+            destination_code: Destination bus stop ID.
             departure_time: Desired departure time. If None, uses current time.
             max_results: Maximum number of journey options to return.
 
@@ -89,7 +90,7 @@ class RouteFinder:
         )
         results.extend(direct_routes)
 
-        # Step 2: If not enough results, find routes with transfers
+        # # Step 2: If not enough results, find routes with transfers
         if len(results) < max_results:
             transfer_routes = await self._find_routes_with_transfers(
                 origin_code, destination_code, departure_time, max_results - len(results)
@@ -108,8 +109,8 @@ class RouteFinder:
         Find direct routes (no transfers) between stops.
 
         Args:
-            origin_id: Origin stop ID.
-            destination_id: Destination stop ID.
+            origin_code: Origin stop ID.
+            destination_code: Destination stop ID.
             departure_time: Minimum departure time.
 
         Returns:
@@ -128,6 +129,7 @@ class RouteFinder:
 
         result = await self.session.execute(stmt)
         routes = result.scalars().all()
+        loguru.logger.info(routes)
 
         journeys = []
         for route in routes:
@@ -147,32 +149,38 @@ class RouteFinder:
                     break
 
             # Validate route direction and timing
-            if origin_schedule and dest_schedule:
-                if dest_schedule.stop_order > origin_schedule.stop_order:
-                    if origin_schedule.departure_time >= departure_time:
-                        # Calculate travel duration
-                        duration = self._calculate_duration(
-                            origin_schedule.departure_time,
-                            dest_schedule.departure_time,
-                        )
+            if not origin_schedule or not dest_schedule:
+                continue
 
-                        segment = RouteSegment(
-                            route_number=route.route_number,
-                            origin_stop=origin_schedule.bus_stop,
-                            destination_stop=dest_schedule.bus_stop,
-                            departure_time=origin_schedule.departure_time,
-                            arrival_time=dest_schedule.departure_time,
-                            travel_duration=duration,
-                        )
+            if dest_schedule.stop_order <= origin_schedule.stop_order:
+                continue
 
-                        journey = JourneyOption(
-                            segments=[segment],
-                            total_duration=duration,
-                            departure_time=origin_schedule.departure_time,
-                            arrival_time=dest_schedule.departure_time,
-                            transfers=0,
-                        )
-                        journeys.append(journey)
+            if origin_schedule.departure_time < departure_time:
+                continue
+
+            # Calculate travel duration
+            duration = self._calculate_duration(
+                origin_schedule.departure_time,
+                dest_schedule.departure_time,
+            )
+
+            segment = RouteSegment(
+                route_number=route.route_number,
+                origin_stop=origin_schedule.bus_stop,
+                destination_stop=dest_schedule.bus_stop,
+                departure_time=origin_schedule.departure_time,
+                arrival_time=dest_schedule.departure_time,
+                travel_duration=duration,
+            )
+
+            journey = JourneyOption(
+                segments=[segment],
+                total_duration=duration,
+                departure_time=origin_schedule.departure_time,
+                arrival_time=dest_schedule.departure_time,
+                transfers=0,
+            )
+            journeys.append(journey)
 
         return journeys
 
@@ -193,8 +201,8 @@ class RouteFinder:
         - Cache route networks
 
         Args:
-            origin_id: Origin stop ID.
-            destination_id: Destination stop ID.
+            origin_code: Origin stop ID.
+            destination_code: Destination stop ID.
             departure_time: Minimum departure time.
             max_results: Maximum results to return.
 

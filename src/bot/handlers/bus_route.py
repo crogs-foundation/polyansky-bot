@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+import loguru
 from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -15,6 +16,7 @@ from bot.keyboards.builders import (
 )
 from bot.keyboards.callbacks import (
     InputMethodCallback,
+    ListNavigationCallback,
     RouteAction,
     RouteMenuCallback,
     StopListCallback,
@@ -30,9 +32,7 @@ router = Router(name="bus_route")
 STOPS_PER_PAGE = 5
 
 
-@router.callback_query(
-    RouteMenuCallback.filter(F.action == RouteAction.START_BUSES)
-)  # FIXED
+@router.callback_query(RouteMenuCallback.filter(F.action == RouteAction.START_BUSES))
 async def show_route_menu(
     callback: CallbackQuery, state: FSMContext, callback_data: RouteMenuCallback
 ):
@@ -45,9 +45,9 @@ async def show_route_menu(
 
     # Initialize FSM data
     await state.update_data(
-        origin_id=None,
+        origin_code=None,
         origin_name=None,
-        destination_id=None,
+        destination_code=None,
         destination_name=None,
         departure_time="Сейчас",
         arrival_time="Как можно скорее",
@@ -135,7 +135,7 @@ async def process_location(
     if message.location is None:
         raise ValueError  # TODO: handle exception
     location: Location = message.location
-    current_state = await state.get_data()
+    current_state = await state.get_state()
 
     # Find nearest stop
     stops_with_distance = await bus_stop_repo.find_nearest(
@@ -151,8 +151,8 @@ async def process_location(
     stop, distance = stops_with_distance[0]
 
     # Update state data
-    field = "origin" if "origin" in current_state else "destination"
-    await state.update_data(**{f"{field}_id": stop.id, f"{field}_name": stop.name})
+    field = "origin" if current_state and "origin" in current_state else "destination"
+    await state.update_data(**{f"{field}_code": stop.code, f"{field}_name": stop.name})
 
     # Return to menu
     await state.set_state(BusRouteStates.menu)
@@ -188,14 +188,14 @@ async def show_stop_list(
         await state.set_state(BusRouteStates.waiting_destination_list)
 
     # Get first page of stops
-    all_stops = await bus_stop_repo.get_all()
     total_count = await bus_stop_repo.count()
     total_pages = (total_count + STOPS_PER_PAGE - 1) // STOPS_PER_PAGE
+    stops = await bus_stop_repo.get_all(limit=STOPS_PER_PAGE, offset=0)
 
     await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
-        f"📋 <b>Выберите остановку:</b>\n\nПоказано {len(all_stops)} из {total_count}",
+        f"📋 <b>Выберите остановку:</b>\n\nСтраница 1 из {total_pages}",
         reply_markup=build_stop_list_keyboard(
-            all_stops, field, page=0, total_pages=total_pages
+            stops, field, page=0, total_pages=total_pages
         ),
         parse_mode="HTML",
     )
@@ -210,7 +210,7 @@ async def select_stop_from_list(
     bus_stop_repo: BusStopRepository,
 ):
     """Handle bus stop selection from list."""
-    stop = await bus_stop_repo.get(callback_data.stop_id)
+    stop = await bus_stop_repo.get_code(callback_data.stop_code)
     field = callback_data.field
 
     if not stop:
@@ -218,7 +218,7 @@ async def select_stop_from_list(
         return
 
     # Update state
-    await state.update_data({f"{field}_id": stop.id, f"{field}_name": stop.name})
+    await state.update_data({f"{field}_code": stop.code, f"{field}_name": stop.name})
     await state.set_state(BusRouteStates.menu)
 
     # Return to menu
@@ -269,8 +269,9 @@ async def process_search_query(
         raise ValueError  # TODO: handle exception
 
     query = message.text.strip()
-    current_state = await state.get_data()
-    field = "origin" if "origin" in current_state else "destination"
+    current_state = await state.get_state()
+
+    field = "origin" if current_state and "origin" in current_state else "destination"
 
     # Search stops
     stops = await bus_stop_repo.search_by_name(query, limit=STOPS_PER_PAGE)
@@ -427,7 +428,7 @@ async def confirm_route(
     data = await state.get_data()
 
     # Validate required fields
-    if not data.get("origin_id") or not data.get("destination_id"):
+    if not data.get("origin_code") or not data.get("destination_code"):
         await callback.answer(
             "❌ Укажите начальную и конечную остановки", show_alert=True
         )
@@ -480,7 +481,7 @@ async def confirm_route(
         await callback.message.edit_text(result_text, parse_mode="HTML")  # ty: ignore [possibly-missing-attribute]
 
         # Send origin location on map
-        origin_stop = await bus_stop_repo.get(data["origin_id"])
+        origin_stop = await bus_stop_repo.get(data["origin_code"])
         if origin_stop:
             await callback.message.answer_location(  # ty: ignore [possibly-missing-attribute]
                 latitude=origin_stop.latitude,
@@ -492,7 +493,8 @@ async def confirm_route(
             )
 
     except Exception as e:
-        await callback.message.edit_text(f"❌ Ошибка при поиске маршрутов:\n{str(e)}")  # ty: ignore [possibly-missing-attribute]
+        await callback.message.edit_text("❌ Ошибка при поиске маршрутов.")  # ty: ignore [possibly-missing-attribute]
+        loguru.logger.warning(f"❌ Ошибка при поиске маршрутов: {str(e)}")
 
     await state.clear()
 
@@ -509,5 +511,82 @@ async def cancel_route_planning(
     await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
         "Планирование маршрута отменено.",
         reply_markup=None,
+    )
+    await callback.answer()
+    await callback.answer()
+
+
+@router.callback_query(ListNavigationCallback.filter())
+async def navigate_stop_list(
+    callback: CallbackQuery,
+    state: FSMContext,
+    callback_data: ListNavigationCallback,
+    bus_stop_repo: BusStopRepository,
+):
+    """
+    Handle pagination navigation in bus stop list.
+
+    Updates the message to show the requested page of stops.
+    """
+    page = callback_data.page
+    field = callback_data.field
+
+    # Get total count for pagination calculation
+    total_count = await bus_stop_repo.count()
+    total_pages = (total_count + STOPS_PER_PAGE - 1) // STOPS_PER_PAGE
+
+    # Validate page bounds
+    if page < 0 or page >= total_pages:
+        await callback.answer("❌ Недопустимая страница", show_alert=True)
+        return
+
+    # Fetch stops for current page
+    offset = page * STOPS_PER_PAGE
+    stops = await bus_stop_repo.get_all(limit=STOPS_PER_PAGE, offset=offset)
+
+    if not stops:
+        await callback.answer("❌ Нет остановок на этой странице", show_alert=True)
+        return
+
+    # Update message with new page
+    await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
+        f"📋 <b>Выберите остановку:</b>\n\nСтраница {page + 1} из {total_pages}",
+        reply_markup=build_stop_list_keyboard(
+            stops, field, page=page, total_pages=total_pages
+        ),
+        parse_mode="HTML",
+    )
+    await callback.answer()
+
+
+@router.callback_query(
+    RouteMenuCallback.filter(F.action == RouteAction.BACK),
+    StateFilter("*"),
+)
+async def handle_back_button(
+    callback: CallbackQuery,
+    state: FSMContext,
+    callback_data: RouteMenuCallback,
+):
+    """
+    Handle back button navigation.
+
+    Returns user to the route menu from any state.
+    """
+    # Return to menu state
+    await state.set_state(BusRouteStates.menu)
+
+    # Get current route data
+    data = await state.get_data()
+
+    await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
+        "🚌 <b>Планирование маршрута</b>\n\nВыберите параметры вашей поездки:",
+        reply_markup=build_route_menu_keyboard(
+            origin=data.get("origin_name"),
+            destination=data.get("destination_name"),
+            departure=data.get("departure_time"),
+            arrival=data.get("arrival_time"),
+        ),
+        parse_mode="HTML",
     )
     await callback.answer()

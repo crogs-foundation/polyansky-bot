@@ -13,6 +13,12 @@ class BusStopRepository(BaseRepository[BusStop]):
     def __init__(self, session: AsyncSession):
         super().__init__(BusStop, session)
 
+    async def get_code(self, code: str) -> BusStop | None:
+        """Get record by code."""
+        query = select(self.model).where(self.model.code == code)
+        result = await self.session.execute(query)
+        return result.scalars().first()
+
     async def search_by_name(
         self, query: str, limit: int = 10, offset: int = 0
     ) -> List[BusStop]:

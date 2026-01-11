@@ -156,7 +156,8 @@ def build_stop_list_keyboard(
         button_text = f"{stop.name}"
 
         builder.button(
-            text=button_text, callback_data=StopListCallback(stop_id=stop.id, field=field)
+            text=button_text,
+            callback_data=StopListCallback(stop_code=stop.code, field=field),
         )
         builder.adjust(1)
 

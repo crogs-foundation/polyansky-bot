@@ -34,9 +34,12 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def get_all(self) -> list[ModelType]:
+    async def get_all(self, limit: int | None = None, offset: int = 0) -> list[ModelType]:
         """Get all records."""
-        query = select(self.model)
+        query = select(self.model).offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
