@@ -1,0 +1,13 @@
+route_number,origin_stop_code,destination_stop_code,description,color,is_active
+1,AVTOСТА,PEREEZD,Маршрут через центральную больницу и гимназию,#FF5733,True
+1,PEREEZB,AVTOSTB,Обратный маршрут через центральную больницу и гимназию,#FF5733,True
+2,AVTOSTB,PEREEZD,Маршрут через техникум и налоговую,#3498DB,True
+2,PEREEZB,AVTOСТА,Обратный маршрут через техникум и налоговую,#3498DB,True
+3,AVTOSTC,PEREEZD,Маршрут через завод и стадион,#2ECC71,True
+3,PEREEZB,AVTOСТА,Обратный маршрут через завод и стадион,#2ECC71,True
+4,AVTOСТА,PEREEZD,Экспресс маршрут через центральный микрорайон,#F39C12,True
+4,PEREEZB,AVTOSTB,Обратный экспресс маршрут через центральный микрорайон,#F39C12,True
+5,AVTOSTB,PEREEZD,Маршрут через музей и набережную,#9B59B6,True
+5,PEREEZB,AVTOSTC,Обратный маршрут через музей и набережную,#9B59B6,True
+6,AVTOSTC,VOKZAL1,Маршрут до вокзала через ГИБДД,#E74C3C,True
+6,VOKZAL1,AVTOСТА,Маршрут от вокзала через ГИБДД,#E74C3C,True
