@@ -1,8 +1,6 @@
-"""Repository for bus stop operations."""
-
 from typing import List, Optional
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import BusStop
@@ -34,10 +32,7 @@ class BusStopRepository(BaseRepository[BusStop]):
         stmt = (
             select(BusStop)
             .where(
-                or_(
-                    func.lower(BusStop.name).like(search_term),
-                    func.lower(BusStop.address).like(search_term),
-                )
+                func.lower(BusStop.name).like(search_term),
             )
             .order_by(
                 # Prioritize exact name matches
@@ -102,3 +97,9 @@ class BusStopRepository(BaseRepository[BusStop]):
         if stops and stops[0][1] <= radius_km:
             return stops[0][0]
         return None
+
+    async def count(self) -> int:
+        results = await self.session.execute(func.count(BusStop.id))
+        if results is None:
+            return -1
+        return results.scalar()

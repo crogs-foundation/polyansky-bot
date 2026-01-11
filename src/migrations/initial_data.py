@@ -8,9 +8,10 @@ from pathlib import Path
 from bot.config import load_config
 from database.connection import DatabaseManager
 from database.repositories.bus_route import BusRouteRepository
+from database.repositories.bus_route_schedule import BusRouteScheduleRepository
 from database.repositories.bus_route_stop import BusRouteStopRepository
-from database.repositories.bus_schedule import BusRouteScheduleRepository
 from database.repositories.bus_stop import BusStopRepository
+from database.repositories.bus_stop_schedule import BusStopScheduleRepository
 
 
 async def load_bus_stops(csv_path: Path, db_manager: DatabaseManager) -> dict:
@@ -18,7 +19,7 @@ async def load_bus_stops(csv_path: Path, db_manager: DatabaseManager) -> dict:
     Load bus stops from CSV.
 
     Returns:
-        dict: Mapping of code to stop_id for later use
+        dict: Mapping of code to stop object
     """
     async with db_manager.session() as session:
         repo = BusStopRepository(session)
@@ -36,14 +37,15 @@ async def load_bus_stops(csv_path: Path, db_manager: DatabaseManager) -> dict:
                 stop = await repo.create(
                     code=row["code"],
                     name=row["name"],
+                    address=row["address"],
+                    address_distance=float(row["address_dist"]),
                     latitude=float(row["latitude"]),
                     longitude=float(row["longitude"]),
                     is_active=row["is_active"].lower() == "true",
                     side_identifier=side_id,
                 )
 
-                # Create mapping: code -> stop_id
-                stop_mapping[row["code"]] = stop.id
+                stop_mapping[row["code"]] = stop
 
         print(f"✓ Loaded {len(stop_mapping)} bus stops from {csv_path}")
         return stop_mapping
@@ -54,7 +56,7 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
     Load bus routes from CSV.
 
     Returns:
-        dict: Mapping of (route_number, origin_code, destination_code) to route_id for later use
+        dict: Mapping of (route_number, origin_code, destination_code) to route object
     """
     async with db_manager.session() as session:
         repo = BusRouteRepository(session)
@@ -73,13 +75,13 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
                     color=row["color"] if row["color"].strip() else None,
                     is_active=row["is_active"].lower() == "true",
                 )
-                # Create mapping key: (route_number, origin_code, destination_code)
+
                 key = (
                     row["route_number"],
                     row["origin_stop_code"],
                     row["destination_stop_code"],
                 )
-                route_mapping[key] = route.id
+                route_mapping[key] = route
 
         print(f"✓ Loaded {len(route_mapping)} bus routes from {csv_path}")
         return route_mapping
@@ -93,14 +95,6 @@ async def load_route_stops(
 ):
     """
     Load route stop configurations from CSV.
-
-    This defines which stops belong to which routes and in what order.
-
-    Args:
-        csv_path: Path to the route_stops CSV file
-        db_manager: Database manager instance
-        stop_mapping: Mapping of stop_code to stop_id
-        route_mapping: Mapping of (route_number, origin_code, destination_code) to route_id
     """
     async with db_manager.session() as session:
         repo = BusRouteStopRepository(session)
@@ -109,30 +103,26 @@ async def load_route_stops(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                # Get route_id using route_number, origin, and destination
                 route_key = (
                     row["route_number"],
                     row["origin_stop_code"],
                     row["destination_stop_code"],
                 )
-                route_id = route_mapping.get(route_key)
-                if not route_id:
+                route = route_mapping.get(route_key)
+                if not route:
                     print(
-                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found, skipping route stop entry"
+                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found"
                     )
                     continue
 
-                # Get stop_id
-                stop_id = stop_mapping.get(row["stop_code"])
-
-                if not stop_id:
-                    print(f"Warning: Stop '{row['stop_code']}' not found, skipping")
+                stop = stop_mapping.get(row["stop_code"])
+                if not stop:
+                    print(f"Warning: Stop '{row['stop_code']}' not found")
                     continue
 
-                # Create route stop entry
-                await repo.create(
-                    route_id=route_id,
-                    bus_stop_id=stop_id,
+                await repo.add(
+                    route_number=route.route_number,
+                    bus_stop_code=stop.code,
                     stop_order=int(row["stop_order"]),
                 )
                 route_stop_count += 1
@@ -147,13 +137,6 @@ async def load_route_schedules(
 ):
     """
     Load route schedules from CSV.
-
-    This defines departure times for each route.
-
-    Args:
-        csv_path: Path to the schedules CSV file
-        db_manager: Database manager instance
-        route_mapping: Mapping of (route_number, origin_code, destination_code) to route_id
     """
     async with db_manager.session() as session:
         repo = BusRouteScheduleRepository(session)
@@ -162,20 +145,19 @@ async def load_route_schedules(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                # Get route_id using route_number, origin, and destination
                 route_key = (
                     row["route_number"],
                     row["origin_stop_code"],
                     row["destination_stop_code"],
                 )
-                route_id = route_mapping.get(route_key)
-                if not route_id:
+                route = route_mapping.get(route_key)
+                if not route:
                     print(
-                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found, skipping schedule entry"
+                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found"
                     )
                     continue
 
-                # Parse departure time
+                # Parse time
                 time_parts = row["departure_time"].strip().split(":")
                 departure_time = time(
                     hour=int(time_parts[0]),
@@ -183,12 +165,13 @@ async def load_route_schedules(
                     second=int(time_parts[2]) if len(time_parts) > 2 else 0,
                 )
 
-                # Parse service_days
-                service_days = int(row["service_days"])
+                service_days = (
+                    int(row["service_days"]) if row.get("service_days") else 127
+                )
 
-                # Parse valid_from and valid_until times
+                # Parse optional times
                 valid_from = None
-                if row["valid_from"].strip():
+                if row.get("valid_from", "").strip():
                     time_parts = row["valid_from"].strip().split(":")
                     valid_from = time(
                         hour=int(time_parts[0]),
@@ -197,7 +180,7 @@ async def load_route_schedules(
                     )
 
                 valid_until = None
-                if row["valid_until"].strip():
+                if row.get("valid_until", "").strip():
                     time_parts = row["valid_until"].strip().split(":")
                     valid_until = time(
                         hour=int(time_parts[0]),
@@ -205,18 +188,79 @@ async def load_route_schedules(
                         second=int(time_parts[2]) if len(time_parts) > 2 else 0,
                     )
 
-                # Create schedule entry
-                await repo.create(
-                    route_id=route_id,
+                await repo.add(
+                    route_number=route.route_number,
                     departure_time=departure_time,
                     service_days=service_days,
                     valid_from=valid_from,
                     valid_until=valid_until,
-                    is_active=row["is_active"].lower() == "true",
+                    is_active=row["is_active"].lower() == "true"
+                    if "is_active" in row
+                    else True,
                 )
                 schedule_count += 1
 
         print(f"✓ Loaded {schedule_count} route schedules from {csv_path}")
+
+
+async def load_stop_schedules(
+    csv_path: Path,
+    db_manager: DatabaseManager,
+    stop_mapping: dict,
+    route_mapping: dict,
+):
+    """
+    Load stop schedules from CSV.
+    """
+    async with db_manager.session() as session:
+        repo = BusStopScheduleRepository(session)
+        schedule_count = 0
+
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                route_key = (
+                    row["route_number"],
+                    row["origin_stop_code"],
+                    row["destination_stop_code"],
+                )
+                route = route_mapping.get(route_key)
+                if not route:
+                    print(
+                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found"
+                    )
+                    continue
+
+                stop = stop_mapping.get(row["stop_code"])
+                if not stop:
+                    print(f"Warning: Stop '{row['stop_code']}' not found")
+                    continue
+
+                # Parse time
+                time_parts = row["arrival_time"].strip().split(":")
+                try:
+                    arrival_time = time(
+                        hour=int(time_parts[0]),
+                        minute=int(time_parts[1]),
+                        second=int(time_parts[2]) if len(time_parts) > 2 else 0,
+                    )
+                except (ValueError, IndexError):
+                    print(
+                        f"Warning: Invalid time format '{row['arrival_time']}', skipping"
+                    )
+                    continue
+
+                await repo.add(
+                    route_number=route.route_number,
+                    stop_code=stop.code,
+                    arrival_time=arrival_time,
+                    is_active=row["is_active"].lower() == "true"
+                    if "is_active" in row
+                    else True,
+                )
+                schedule_count += 1
+
+        print(f"✓ Loaded {schedule_count} stop schedules from {csv_path}")
 
 
 async def main():
@@ -230,7 +274,6 @@ async def main():
     print("=" * 60)
 
     try:
-        # Load data in order (stops -> routes -> route_stops -> schedules)
         data_dir = Path("data")
 
         print("\n1. Loading bus stops...")
@@ -248,11 +291,23 @@ async def main():
         )
 
         print("\n4. Loading route schedules...")
-        await load_route_schedules(
-            data_dir / "route_schedules.csv",
-            db_manager,
-            route_mapping,
-        )
+        route_schedules_path = data_dir / "route_schedules.csv"
+        if route_schedules_path.exists():
+            await load_route_schedules(route_schedules_path, db_manager, route_mapping)
+        else:
+            print(f"  Note: {route_schedules_path} not found, skipping route schedules")
+
+        print("\n5. Loading stop schedules...")
+        stop_schedules_path = data_dir / "stop_schedules.csv"
+        if stop_schedules_path.exists():
+            await load_stop_schedules(
+                stop_schedules_path,
+                db_manager,
+                stop_mapping,
+                route_mapping,
+            )
+        else:
+            print(f"  Note: {stop_schedules_path} not found, skipping stop schedules")
 
         print("\n" + "=" * 60)
         print("✓ All data loaded successfully!")
@@ -261,10 +316,11 @@ async def main():
     except FileNotFoundError as e:
         print(f"\n✗ Error: CSV file not found - {e}")
         print("Please ensure all CSV files are in the 'data' directory:")
-        print("  - data/bus_stops.csv")
-        print("  - data/bus_routes.csv")
+        print("  - data/stops.csv")
+        print("  - data/routes.csv")
         print("  - data/route_stops.csv")
-        print("  - data/route_schedules.csv")
+        print("  - data/route_schedules.csv (optional)")
+        print("  - data/stop_schedules.csv (optional)")
     except Exception as e:
         print(f"\n✗ Error loading data: {e}")
         raise

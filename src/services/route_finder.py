@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 from typing import List, Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import BusRoute, BusStop, RouteSchedule
+from database.models import BusRoute, BusStop, RouteStop
 
 
 @dataclass
@@ -56,8 +56,8 @@ class RouteFinder:
 
     async def find_routes(
         self,
-        origin_id: int,
-        destination_id: int,
+        origin_code: str,
+        destination_code: str,
         departure_time: Optional[time] = None,
         max_results: int = 3,
     ) -> List[JourneyOption]:
@@ -85,14 +85,14 @@ class RouteFinder:
 
         # Step 1: Find direct routes
         direct_routes = await self._find_direct_routes(
-            origin_id, destination_id, departure_time
+            origin_code, destination_code, departure_time
         )
         results.extend(direct_routes)
 
         # Step 2: If not enough results, find routes with transfers
         if len(results) < max_results:
             transfer_routes = await self._find_routes_with_transfers(
-                origin_id, destination_id, departure_time, max_results - len(results)
+                origin_code, destination_code, departure_time, max_results - len(results)
             )
             results.extend(transfer_routes)
 
@@ -102,7 +102,7 @@ class RouteFinder:
         return results[:max_results]
 
     async def _find_direct_routes(
-        self, origin_id: int, destination_id: int, departure_time: time
+        self, origin_code: str, destination_code: str, departure_time: time
     ) -> List[JourneyOption]:
         """
         Find direct routes (no transfers) between stops.
@@ -118,16 +118,11 @@ class RouteFinder:
         # Find routes that contain both stops in correct order
         stmt = (
             select(BusRoute)
-            .join(RouteSchedule, BusRoute.id == RouteSchedule.route_id)
+            .join(RouteStop, BusRoute.route_number == RouteStop.route_number)
             .where(
-                and_(
-                    RouteSchedule.bus_stop_id.in_([origin_id, destination_id]),
-                    RouteSchedule.is_key_stop,  # Only stops with schedule
-                )
+                RouteStop.bus_stop_code.in_([origin_code, destination_code]),
             )
-            .options(
-                selectinload(BusRoute.schedules).selectinload(RouteSchedule.bus_stop)
-            )
+            .options(selectinload(BusRoute.route_stops).selectinload(RouteStop.bus_stop))
             .distinct()
         )
 
@@ -141,10 +136,10 @@ class RouteFinder:
             dest_schedule = None
 
             for schedule in sorted(route.schedules, key=lambda s: s.stop_order):
-                if schedule.bus_stop_id == origin_id and schedule.is_key_stop:
+                if schedule.bus_stop_code == origin_code and schedule.is_active:
                     origin_schedule = schedule
                 elif (
-                    schedule.bus_stop_id == destination_id
+                    schedule.bus_stop_code == destination_code
                     and schedule.is_key_stop
                     and origin_schedule is not None
                 ):
@@ -183,8 +178,8 @@ class RouteFinder:
 
     async def _find_routes_with_transfers(
         self,
-        origin_id: int,
-        destination_id: int,
+        origin_code: str,
+        destination_code: str,
         departure_time: time,
         max_results: int,
     ) -> List[JourneyOption]:

@@ -30,8 +30,8 @@ def build_main_menu_keyboard() -> InlineKeyboardMarkup:
 def build_route_menu_keyboard(
     origin: Optional[str] = None,
     destination: Optional[str] = None,
-    departure: str = "Сейчас",
-    arrival: str = "Как можно скорее",
+    departure: str | None = None,
+    arrival: str | None = None,
 ) -> InlineKeyboardMarkup:
     """
     Build route planning menu with current values.
@@ -48,6 +48,10 @@ def build_route_menu_keyboard(
     Returns:
         Inline keyboard markup.
     """
+    if not departure:
+        departure = "Сейчас"
+    if not arrival:
+        arrival = "Как можно скорее"
     origin_text = origin or "Не указано"
     destination_text = destination or "Не указано"
 
@@ -150,10 +154,6 @@ def build_stop_list_keyboard(
     # Add stop buttons (max 5)
     for stop in stops[:5]:
         button_text = f"{stop.name}"
-        if len(stop.address) > 30:
-            button_text += f" ({stop.address[:27]}...)"
-        else:
-            button_text += f" ({stop.address})"
 
         builder.button(
             text=button_text, callback_data=StopListCallback(stop_id=stop.id, field=field)

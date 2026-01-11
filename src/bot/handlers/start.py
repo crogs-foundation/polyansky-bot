@@ -18,6 +18,9 @@ async def cmd_start(message: Message, state: FSMContext):
     Displays welcome message and main menu.
     Clears any existing FSM state.
     """
+    if not message.from_user:
+        return ValueError  # TODO: handle exception
+
     # Clear any previous conversation state
     await state.clear()
 

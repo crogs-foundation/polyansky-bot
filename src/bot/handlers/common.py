@@ -24,7 +24,7 @@ async def callback_cancel(callback: CallbackQuery, state: FSMContext):
     """
     await state.clear()
 
-    await callback.message.edit_text(
+    await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
         "❌ Действие отменено.", reply_markup=build_main_menu_keyboard()
     )
     await callback.answer()
@@ -44,7 +44,7 @@ async def callback_back(callback: CallbackQuery, state: FSMContext):
         await state.set_state(BusRouteStates.menu)
         data = await state.get_data()
 
-        await callback.message.edit_text(
+        await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
             "🚌 <b>Планирование маршрута</b>\n\nВыберите параметры вашей поездки:",
             reply_markup=build_route_menu_keyboard(
                 origin=data.get("origin_name"),
@@ -57,7 +57,7 @@ async def callback_back(callback: CallbackQuery, state: FSMContext):
     else:
         # Otherwise go to main menu
         await state.clear()
-        await callback.message.edit_text(
+        await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
             "Главное меню:", reply_markup=build_main_menu_keyboard()
         )
 
@@ -182,7 +182,7 @@ async def error_handler(event: ErrorEvent):
                 parse_mode="HTML",
             )
         elif event.update.callback_query:
-            await event.update.callback_query.message.answer(
+            await event.update.callback_query.message.answer(  # ty: ignore [possibly-missing-attribute]
                 "😞 <b>Произошла ошибка</b>\n\n"
                 "Пожалуйста, попробуйте ещё раз или используйте /cancel.",
                 parse_mode="HTML",
