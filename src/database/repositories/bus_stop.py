@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from rapidfuzz import fuzz, process
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,39 +20,110 @@ class BusStopRepository(BaseRepository[BusStop]):
         result = await self.session.execute(query)
         return result.scalars().first()
 
+    async def get_all(self, limit: int | None = None, offset: int = 0) -> list[BusStop]:
+        """
+        Get all bus stops ordered alphabetically by name.
+
+        Args:
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            List of bus stops ordered by name.
+        """
+        query = select(self.model).order_by(BusStop.name.asc()).offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
     async def search_by_name(
         self, query: str, limit: int = 10, offset: int = 0
     ) -> List[BusStop]:
         """
-        Search bus stops by name (case-insensitive substring match).
+        Fuzzy search bus stops by name using rapidfuzz.
+
+        Handles typos, partial matches, and word variations.
+        Examples:
+            - "бальница" → "Центральная районная больница"
+            - "вокзал" → "Железнодорожный вокзал"
+            - "побед" → "улица Победы"
 
         Args:
-            query: Search term.
+            query: Search term (can contain typos).
             limit: Maximum results to return.
             offset: Number of results to skip.
 
         Returns:
-            List of matching bus stops ordered by relevance.
+            List of matching bus stops ordered by relevance score.
         """
-        search_term = f"%{query.lower()}%"
+        if not query or not query.strip():
+            return []
 
-        stmt = (
-            select(BusStop)
-            .where(
-                func.lower(BusStop.name).like(search_term),
-            )
-            .order_by(
-                # Prioritize exact name matches
-                func.lower(BusStop.name) == query.lower(),
-                # Then order alphabetically
-                BusStop.name,
-            )
-            .limit(limit)
-            .offset(offset)
+        query = query.strip()
+
+        # Get all active bus stops (consider adding caching for production)
+        stmt = select(BusStop).where(BusStop.is_active)
+        result = await self.session.execute(stmt)
+        all_stops = list(result.scalars().all())
+
+        if not all_stops:
+            return []
+
+        # Prepare stop names for matching
+        stop_names = [stop.name for stop in all_stops]
+
+        # Use token_set_ratio for best partial word matching
+        # This handles:
+        # - Word order variations
+        # - Partial matches
+        # - Extra/missing words
+        matches = process.extract(
+            query,
+            stop_names,
+            scorer=fuzz.token_set_ratio,
+            limit=len(all_stops),  # Get all stops with scores
+            score_cutoff=50,  # Minimum similarity (0-100)
         )
 
-        result = await self.session.execute(stmt)
-        return list(result.scalars().all())
+        # Additionally, try partial_ratio for substring matching
+        # This helps with cases like "бальница" → "больница"
+        partial_matches = process.extract(
+            query,
+            stop_names,
+            scorer=fuzz.partial_ratio,
+            limit=len(all_stops),
+            score_cutoff=60,
+        )
+
+        # Combine and deduplicate results with best scores
+        combined_scores = {}
+        for match_text, score, idx in matches:
+            if idx not in combined_scores:
+                combined_scores[idx] = score
+            else:
+                combined_scores[idx] = max(combined_scores[idx], score)
+
+        for match_text, score, idx in partial_matches:
+            if idx not in combined_scores:
+                combined_scores[idx] = score
+            else:
+                # Take the best score from either method
+                combined_scores[idx] = max(combined_scores[idx], score)
+
+        # Sort by score (descending) and apply offset/limit
+        sorted_indices = sorted(
+            combined_scores.keys(),
+            key=lambda idx: combined_scores[idx],
+            reverse=True,
+        )
+
+        # Apply offset and limit
+        selected_indices = sorted_indices[offset : offset + limit]
+
+        # Return the matched stops in order of relevance
+        return [all_stops[idx] for idx in selected_indices]
 
     async def find_nearest(
         self, latitude: float, longitude: float, limit: int = 5

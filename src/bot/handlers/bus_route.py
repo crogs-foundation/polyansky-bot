@@ -468,12 +468,12 @@ async def confirm_route(
             result_text += f"<b>Вариант {idx}:</b>\n"
             for segment in route.segments:
                 result_text += (
-                    f"🚌 Маршрут {segment.route_number}\n"
-                    f"📍 {segment.origin_stop.name}\n"
+                    f"🚌 Маршрут {segment.route_number // 10}\n"
+                    f"📍 {segment.origin_stop.name}\n\n"
                     f"🕐 Отправление: {segment.departure_time.strftime('%H:%M')}\n"
                     f"📍 {segment.destination_stop.name}\n"
-                    f"🕐 Прибытие: {segment.arrival_time.strftime('%H:%M')}\n"
-                    f"⏱ Время в пути: {segment.travel_duration}\n\n"
+                    f"🕐 Прибытие: {segment.arrival_time.strftime('%H:%M')}\n\n"
+                    # f"⏱ Время в пути: {segment.travel_duration}\n\n"
                 )
             result_text += f"✅ Всего: {route.total_duration}\n"
             result_text += "━━━━━━━━━━━━━━\n\n"
@@ -590,3 +590,14 @@ async def handle_back_button(
         parse_mode="HTML",
     )
     await callback.answer()
+
+
+@router.callback_query(F.data.in_(["disabled_back", "disabled_forward", "page_info"]))
+async def handle_disabled_navigation(callback: CallbackQuery):
+    """
+    Handle clicks on disabled navigation buttons.
+
+    Simply answers the callback without doing anything to prevent
+    "query is too old" errors and provide feedback to user.
+    """
+    await callback.answer()  # Silent answer - no alert

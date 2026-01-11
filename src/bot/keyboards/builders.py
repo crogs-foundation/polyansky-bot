@@ -151,46 +151,52 @@ def build_stop_list_keyboard(
     """
     builder = InlineKeyboardBuilder()
 
-    # Add stop buttons (max 5)
+    # Add stop buttons - one button per row using row() method
     for stop in stops[:5]:
-        button_text = f"{stop.name}"
-
-        builder.button(
-            text=button_text,
-            callback_data=StopListCallback(stop_code=stop.code, field=field),
-        )
-        builder.adjust(1)
-
-    # Add navigation row
-    nav_buttons = []
-    if page > 0:
-        nav_buttons.append(
+        builder.row(
             InlineKeyboardButton(
-                text="◀️ Назад",
-                callback_data=ListNavigationCallback(page=page - 1, field=field).pack(),
+                text=f"{stop.name}({stop.code})",
+                callback_data=StopListCallback(stop_code=stop.code, field=field).pack(),
             )
         )
+
+    # Build navigation buttons list
+    nav_buttons = []
+
+    enabled_back = page > 0
+    nav_buttons.append(
+        InlineKeyboardButton(
+            text=f"{'◀️' if enabled_back else '✖️'} Назад",
+            callback_data=ListNavigationCallback(page=page - 1, field=field).pack()
+            if enabled_back
+            else "disabled_back",
+        )
+    )
 
     nav_buttons.append(
         InlineKeyboardButton(text=f"{page + 1}/{total_pages}", callback_data="page_info")
     )
 
-    if page < total_pages - 1:
-        nav_buttons.append(
-            InlineKeyboardButton(
-                text="Вперёд ▶️",
-                callback_data=ListNavigationCallback(page=page + 1, field=field).pack(),
-            )
+    enabled_forward = page < total_pages - 1
+    nav_buttons.append(
+        InlineKeyboardButton(
+            text=f"Вперёд {'▶️' if enabled_forward else '✖️'}",
+            callback_data=ListNavigationCallback(page=page + 1, field=field).pack()
+            if enabled_forward
+            else "disabled_forward",
         )
+    )
 
+    # Add all navigation buttons as a single row
     builder.row(*nav_buttons)
 
-    # Back button (not cancel)
-    builder.button(
-        text="« Назад",
-        callback_data=RouteMenuCallback(action=RouteAction.BACK),  # FIXED
+    # Add Back button as a separate row
+    builder.row(
+        InlineKeyboardButton(
+            text="« Назад",
+            callback_data=RouteMenuCallback(action=RouteAction.BACK).pack(),
+        )
     )
-    builder.adjust(1)
 
     return builder.as_markup()
 

@@ -32,7 +32,7 @@ class BusStop(Base):
     )  # 7-letter unique code
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     address: Mapped[str] = mapped_column(String(255), nullable=False)
-    address_distance: Mapped[str] = mapped_column(Float, nullable=False)
+    address_distance: Mapped[float] = mapped_column(Float, nullable=False)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -46,7 +46,10 @@ class BusStop(Base):
 
     # Relationships
     route_stops: Mapped[List["RouteStop"]] = relationship(
-        "RouteStop", back_populates="bus_stop", cascade="all, delete-orphan"
+        "RouteStop",
+        back_populates="bus_stop",
+        cascade="all, delete-orphan",
+        order_by="RouteStop.stop_order",
     )
     routes_as_origin: Mapped[List["BusRoute"]] = relationship(
         "BusRoute",
@@ -77,7 +80,9 @@ class BusRoute(Base):
 
     __tablename__ = "bus_routes"
 
-    route_number: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    route_number: Mapped[int] = mapped_column(
+        Integer, nullable=False, index=True, unique=True
+    )
     origin_stop_code: Mapped[str] = mapped_column(
         String(7), ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
     )
@@ -116,15 +121,6 @@ class BusRoute(Base):
         "StopSchedule", back_populates="route", cascade="all, delete-orphan"
     )
 
-    __table_args__ = (
-        UniqueConstraint(
-            "route_number",
-            "origin_stop_code",
-            "destination_stop_code",
-            name="uix_route_origin_dest",
-        ),
-    )
-
     def __repr__(self) -> str:
         return f"<BusRoute(id={self.id}, number='{self.route_number}', {self.origin_stop_code} -> {self.destination_stop_code})>"
 
@@ -142,8 +138,8 @@ class RouteStop(Base):
     route_number: Mapped[int] = mapped_column(
         Integer, ForeignKey("bus_routes.route_number", ondelete="CASCADE"), nullable=False
     )
-    bus_stop_code: Mapped[str] = mapped_column(
-        Integer, ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
+    stop_code: Mapped[str] = mapped_column(
+        String(7), ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
     )
     stop_order: Mapped[int] = mapped_column(
         Integer, nullable=False
@@ -154,15 +150,13 @@ class RouteStop(Base):
     bus_stop: Mapped["BusStop"] = relationship("BusStop", back_populates="route_stops")
 
     __table_args__ = (
-        UniqueConstraint(
-            "route_number", "bus_stop_code", "stop_order", name="uix_route_stop_order"
-        ),
+        UniqueConstraint("route_number", "stop_code", name="uix_route_stop_order"),
     )
 
     def __repr__(self) -> str:
         return (
             f"<RouteStop(route_number={self.route_number}, "
-            f"stop_code={self.bus_stop_code}, order={self.stop_order})>"
+            f"stop_code={self.stop_code}, order={self.stop_order})>"
         )
 
 
@@ -184,8 +178,7 @@ class RouteSchedule(Base):
     )  # Departure time from first stop
     service_days: Mapped[int] = mapped_column(
         Integer, nullable=False, default=127
-    )  # 3-bit mask: bit 0=Monday (001), bit 6=Sunday (111)
-    # Examples: 127 (1111111) = all days, 31 (0011111) = Mon-Fri, 96 (1100000) = Sat-Sun
+    )  # Examples: 127 (1111111) = all days, 31 (0011111) = Mon-Fri, 96 (1100000) = Sat-Sun
     valid_from: Mapped[time] = mapped_column(
         Time, nullable=True
     )  # Time when this schedule becomes valid (e.g., 06:00 for morning service)
@@ -224,7 +217,7 @@ class StopSchedule(Base):
         Integer, ForeignKey("bus_routes.route_number", ondelete="CASCADE"), nullable=False
     )
     stop_code: Mapped[str] = mapped_column(
-        Integer, ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
+        String(7), ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
     )
     arrival_time: Mapped[time] = mapped_column(
         Time, nullable=False, index=True

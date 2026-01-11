@@ -76,12 +76,7 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
                     is_active=row["is_active"].lower() == "true",
                 )
 
-                key = (
-                    row["route_number"],
-                    row["origin_stop_code"],
-                    row["destination_stop_code"],
-                )
-                route_mapping[key] = route
+                route_mapping[row["route_number"]] = route
 
         print(f"✓ Loaded {len(route_mapping)} bus routes from {csv_path}")
         return route_mapping
@@ -103,16 +98,9 @@ async def load_route_stops(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                route_key = (
-                    row["route_number"],
-                    row["origin_stop_code"],
-                    row["destination_stop_code"],
-                )
-                route = route_mapping.get(route_key)
+                route = route_mapping.get(row["route_number"])
                 if not route:
-                    print(
-                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found"
-                    )
+                    print(f"Warning: Route {row['route_number']} not found")
                     continue
 
                 stop = stop_mapping.get(row["stop_code"])
@@ -122,7 +110,7 @@ async def load_route_stops(
 
                 await repo.add(
                     route_number=route.route_number,
-                    bus_stop_code=stop.code,
+                    stop_code=stop.code,
                     stop_order=int(row["stop_order"]),
                 )
                 route_stop_count += 1
@@ -145,16 +133,9 @@ async def load_route_schedules(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                route_key = (
-                    row["route_number"],
-                    row["origin_stop_code"],
-                    row["destination_stop_code"],
-                )
-                route = route_mapping.get(route_key)
+                route = route_mapping.get(row["route_number"])
                 if not route:
-                    print(
-                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found"
-                    )
+                    print(f"Warning: Route {row['route_number']} not found")
                     continue
 
                 # Parse time
@@ -219,16 +200,9 @@ async def load_stop_schedules(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                route_key = (
-                    row["route_number"],
-                    row["origin_stop_code"],
-                    row["destination_stop_code"],
-                )
-                route = route_mapping.get(route_key)
+                route = route_mapping.get(row["route_number"])
                 if not route:
-                    print(
-                        f"Warning: Route {row['route_number']} ({row['origin_stop_code']} -> {row['destination_stop_code']}) not found"
-                    )
+                    print(f"Warning: Route {row['route_number']} not found")
                     continue
 
                 stop = stop_mapping.get(row["stop_code"])

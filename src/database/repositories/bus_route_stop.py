@@ -13,13 +13,13 @@ class BusRouteStopRepository(BaseRepository[RouteStop]):
     async def add(  # Add create method
         self,
         route_number: int,
-        bus_stop_code: str,
+        stop_code: str,
         stop_order: int,
     ) -> RouteStop:
         """Create a new route stop entry."""
         route_stop = RouteStop(
             route_number=route_number,
-            bus_stop_code=bus_stop_code,
+            stop_code=stop_code,
             stop_order=stop_order,
         )
         self.session.add(route_stop)
