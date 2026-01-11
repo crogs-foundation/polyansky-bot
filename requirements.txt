@@ -17,6 +17,8 @@ annotated-types==0.7.0
     # via pydantic
 attrs==25.4.0
     # via aiohttp
+branca==0.8.2
+    # via folium
 certifi==2026.1.4
     # via
     #   aiogram
@@ -33,6 +35,8 @@ environs==14.5.0
     # via polyansky-bot
 filelock==3.20.2
     # via virtualenv
+folium==0.20.0
+    # via polyansky-bot
 frozenlist==1.8.0
     # via
     #   aiohttp
@@ -45,10 +49,16 @@ idna==3.11
     # via
     #   requests
     #   yarl
+jinja2==3.1.6
+    # via
+    #   branca
+    #   folium
 loguru==0.7.3
     # via polyansky-bot
 magic-filter==1.0.12
     # via aiogram
+markupsafe==3.0.3
+    # via jinja2
 marshmallow==4.2.0
     # via environs
 multidict==6.7.0
@@ -57,6 +67,8 @@ multidict==6.7.0
     #   yarl
 nodeenv==1.10.0
     # via pre-commit
+numpy==2.4.1
+    # via folium
 platformdirs==4.5.1
     # via virtualenv
 pre-commit==4.5.1
@@ -75,7 +87,9 @@ pyyaml==6.0.3
 rapidfuzz==3.14.3
     # via polyansky-bot
 requests==2.32.5
-    # via polyansky-bot
+    # via
+    #   folium
+    #   polyansky-bot
 ruff==0.14.11
 sqlalchemy==2.0.45
     # via polyansky-bot
@@ -95,5 +109,7 @@ virtualenv==20.36.0
     # via pre-commit
 win32-setctime==1.2.0 ; sys_platform == 'win32'
     # via loguru
+xyzservices==2025.11.0
+    # via folium
 yarl==1.22.0
     # via aiohttp

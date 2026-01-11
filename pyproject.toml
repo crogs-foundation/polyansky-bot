@@ -8,6 +8,7 @@ dependencies = [
     "aiogram>=3.24.0",
     "aiosqlite>=0.22.1",
     "environs>=14.5.0",
+    "folium>=0.20.0",
     "loguru>=0.7.3",
     "rapidfuzz>=3.14.3",
     "requests>=2.32.5",

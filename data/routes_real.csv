@@ -1,0 +1,2 @@
+route_number,origin_stop_code,destination_stop_code,description,color,is_active
+31, PEREEZD, PEREEZB, "", "#ffffff", 1
