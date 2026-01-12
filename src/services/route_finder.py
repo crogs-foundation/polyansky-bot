@@ -145,6 +145,7 @@ class RouteFinder:
         routes = result.scalars().all()
 
         journeys = []
+        available_routes: list[tuple[BusRoute, StopSchedule]] = []
         for route in routes:
             # Create a mapping of stop_code to RouteStop for ordering
             route_stop_map = {rs.stop_code: rs for rs in route.route_stops}
@@ -185,6 +186,7 @@ class RouteFinder:
                 loguru.logger.debug(f"Route {route.route_number}: missing schedules")
                 continue
 
+            available_routes.append((route, origin_schedules[-1]))
             # Match schedules: for each origin departure, find matching destination arrival
             # Assumption: schedules are paired (same index = same bus trip)
             for orig_sched, dest_sched in zip(origin_schedules, dest_schedules):
@@ -223,7 +225,14 @@ class RouteFinder:
                     transfers=0,
                 )
                 journeys.append(journey)
-
+        if len(journeys) == 0:
+            loguru.logger.debug(
+                "No journeys found. "
+                + ";".join(
+                    f"Route {route.route_number}: last bus has already departed at {departed.arrival_time}"
+                    for (route, departed) in available_routes
+                )
+            )
         return journeys
 
     async def _find_routes_with_transfers(
