@@ -20,26 +20,16 @@ def create_bus_stop_map(csv_file="stops.csv", output_file="bus_stops_map.html"):
     try:
         with open(csv_file, "r", encoding="utf-8") as f:
             # Detect delimiter (checking for comma or semicolon)
-            sample = f.read(1024)
-            f.seek(0)
-
-            if "," in sample:
-                delimiter = ","
-            else:
-                delimiter = ";"
-
-            reader = csv.DictReader(f, delimiter=delimiter)
+            reader = csv.DictReader(f, delimiter=",")
 
             # Clean up column names (strip whitespace)
             fieldnames = [field.strip() for field in reader.fieldnames]
-            reader = csv.DictReader(f, delimiter=delimiter, fieldnames=fieldnames)
-
-            # Skip header row since we're providing fieldnames
-            next(reader)
+            reader = csv.DictReader(f, delimiter=",", fieldnames=fieldnames)
 
             for row in reader:
                 # Clean row values
                 cleaned_row = {}
+                print(row)
                 for key, value in row.items():
                     cleaned_key = key.strip()
                     cleaned_value = value.strip() if value else ""
