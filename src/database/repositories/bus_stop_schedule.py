@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import StopSchedule
 from database.repositories.base import BaseRepository
+from utils.service_days import parse_service_days
 
 
 class BusStopScheduleRepository(BaseRepository[StopSchedule]):
@@ -18,14 +19,25 @@ class BusStopScheduleRepository(BaseRepository[StopSchedule]):
         route_number: int,
         stop_code: str,
         arrival_time: time,
+        service_days: int,
         is_active: bool = True,
     ) -> StopSchedule:
         """Create a new stop schedule entry."""
+        monday, tuesday, wednesday, thursday, friday, saturday, sunday = (
+            parse_service_days(service_days)
+        )
         stop_schedule = StopSchedule(
             route_number=route_number,
             stop_code=stop_code,
             arrival_time=arrival_time,
             is_active=is_active,
+            monday=monday,
+            tuesday=tuesday,
+            wednesday=wednesday,
+            thursday=thursday,
+            friday=friday,
+            saturday=saturday,
+            sunday=sunday,
         )
         self.session.add(stop_schedule)
         await self.session.commit()
@@ -36,12 +48,22 @@ class BusStopScheduleRepository(BaseRepository[StopSchedule]):
         """Bulk create stop schedule entries."""
         stop_schedules = []
         for data in stop_schedules_data:
+            monday, tuesday, wednesday, thursday, friday, saturday, sunday = (
+                parse_service_days(data["service_days"])
+            )
             stop_schedules.append(
                 StopSchedule(
                     route_number=data["route_number"],
                     stop_code=data["stop_code"],
                     arrival_time=data["arrival_time"],
                     is_active=data.get("is_active", True),
+                    monday=monday,
+                    tuesday=tuesday,
+                    wednesday=wednesday,
+                    thursday=thursday,
+                    friday=friday,
+                    saturday=saturday,
+                    sunday=sunday,
                 )
             )
 

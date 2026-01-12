@@ -1,10 +1,10 @@
 from datetime import time
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import RouteSchedule
 from database.repositories.base import BaseRepository
+from utils.service_days import parse_service_days
 
 
 class BusRouteScheduleRepository(BaseRepository[RouteSchedule]):
@@ -18,18 +18,24 @@ class BusRouteScheduleRepository(BaseRepository[RouteSchedule]):
         route_number: int,
         departure_time: time,
         service_days: int = 127,
-        valid_from: Optional[time] = None,
-        valid_until: Optional[time] = None,
         is_active: bool = True,
     ) -> RouteSchedule:
         """Create a new route schedule entry."""
+        monday, tuesday, wednesday, thursday, friday, saturday, sunday = (
+            parse_service_days(service_days)
+        )
+
         route_schedule = RouteSchedule(
             route_number=route_number,
             departure_time=departure_time,
-            service_days=service_days,
-            valid_from=valid_from,
-            valid_until=valid_until,
             is_active=is_active,
+            monday=monday,
+            tuesday=tuesday,
+            wednesday=wednesday,
+            thursday=thursday,
+            friday=friday,
+            saturday=saturday,
+            sunday=sunday,
         )
         self.session.add(route_schedule)
         await self.session.commit()

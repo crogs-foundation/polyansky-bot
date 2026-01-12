@@ -176,9 +176,6 @@ class RouteSchedule(Base):
     departure_time: Mapped[time] = mapped_column(
         Time, nullable=False, index=True
     )  # Departure time from first stop
-    service_days: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=127
-    )  # Examples: 127 (1111111) = all days, 31 (0011111) = Mon-Fri, 96 (1100000) = Sat-Sun
     valid_from: Mapped[time] = mapped_column(
         Time, nullable=True
     )  # Time when this schedule becomes valid (e.g., 06:00 for morning service)
@@ -188,6 +185,28 @@ class RouteSchedule(Base):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False, index=True
     )  # Can be used to disable specific times
+
+    monday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    tuesday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    wednesday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    thursday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    friday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    saturday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    sunday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
 
     # Relationships
     route: Mapped["BusRoute"] = relationship("BusRoute", back_populates="schedules")
@@ -199,7 +218,7 @@ class RouteSchedule(Base):
     def __repr__(self) -> str:
         return (
             f"<RouteSchedule(route_number={self.route_number}, "
-            f"departure={self.departure_time}, days={self.service_days})>"
+            f"departure={self.departure_time})>"
         )
 
 
@@ -227,6 +246,28 @@ class StopSchedule(Base):
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
+    )
+
+    monday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    tuesday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    wednesday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    thursday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    friday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    saturday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
+    )
+    sunday: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=False
     )
 
     # Relationships

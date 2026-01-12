@@ -149,32 +149,10 @@ async def load_route_schedules(
                 service_days = (
                     int(row["service_days"]) if row.get("service_days") else 127
                 )
-
-                # Parse optional times
-                valid_from = None
-                if row.get("valid_from", "").strip():
-                    time_parts = row["valid_from"].strip().split(":")
-                    valid_from = time(
-                        hour=int(time_parts[0]),
-                        minute=int(time_parts[1]),
-                        second=int(time_parts[2]) if len(time_parts) > 2 else 0,
-                    )
-
-                valid_until = None
-                if row.get("valid_until", "").strip():
-                    time_parts = row["valid_until"].strip().split(":")
-                    valid_until = time(
-                        hour=int(time_parts[0]),
-                        minute=int(time_parts[1]),
-                        second=int(time_parts[2]) if len(time_parts) > 2 else 0,
-                    )
-
                 await repo.add(
                     route_number=route.route_number,
                     departure_time=departure_time,
                     service_days=service_days,
-                    valid_from=valid_from,
-                    valid_until=valid_until,
                     is_active=row["is_active"].lower() == "true"
                     if "is_active" in row
                     else True,
@@ -227,6 +205,9 @@ async def load_stop_schedules(
                     )
                     skipped_count += 1
                     continue
+                service_days = (
+                    int(row["service_days"]) if row.get("service_days") else 127
+                )
 
                 schedule_data.append(
                     {
@@ -236,6 +217,7 @@ async def load_stop_schedules(
                         "is_active": row["is_active"].lower() == "true"
                         if "is_active" in row
                         else True,
+                        "service_days": service_days,
                     }
                 )
 
