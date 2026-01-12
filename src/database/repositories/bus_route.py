@@ -11,7 +11,7 @@ class BusRouteRepository(BaseRepository[BusRoute]):
     def __init__(self, session: AsyncSession):
         super().__init__(BusRoute, session)
 
-    async def get_by_number(self, route_number: int) -> BusRoute | None:
+    async def get_by_name(self, route_name: int) -> BusRoute | None:
         """
         Search bus stops by name (case-insensitive substring match).
 
@@ -24,7 +24,7 @@ class BusRouteRepository(BaseRepository[BusRoute]):
             List of matching bus stops ordered by relevance.
         """
 
-        stmt = select(BusRoute).where(BusRoute.name == route_number)
+        stmt = select(BusRoute).where(BusRoute.name == route_name)
 
         result = await self.session.execute(stmt)
         return result.scalars().first()

@@ -468,7 +468,7 @@ async def confirm_route(
             result_text += f"<b>Вариант {idx}:</b>\n"
             for segment in route.segments:
                 result_text += (
-                    f"🚌 Маршрут {segment.route_number}\n"
+                    f"🚌 Маршрут {segment.route_name}\n"
                     f"📍 {segment.origin_stop.name}\n\n"
                     f"🕐 Отправление: {segment.departure_time.strftime('%H:%M')}\n"
                     f"📍 {segment.destination_stop.name}\n"

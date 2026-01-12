@@ -37,11 +37,11 @@ def generate_route_schedules(routes):
     }
 
     for route in routes:
-        route_number = route["route_number"]
-        if route_number not in patterns:
+        route_name = route["route_name"]
+        if route_name not in patterns:
             continue
 
-        start_time, end_time, interval, peak_interval = patterns[route_number]
+        start_time, end_time, interval, peak_interval = patterns[route_name]
 
         # Generate departure times
         current_time = datetime.combine(datetime.today(), start_time)
@@ -62,9 +62,9 @@ def generate_route_schedules(routes):
 
             # Determine service days
             # 127 = All days, 31 = Weekdays (Mon-Fri), 96 = Weekend (Sat-Sun)
-            if route_number in ["1", "2"]:  # Main routes run every day
+            if route_name in ["1", "2"]:  # Main routes run every day
                 service_days = 127
-            elif route_number == "6":  # Some routes might not run on Sunday
+            elif route_name == "6":  # Some routes might not run on Sunday
                 service_days = 126  # All days except Sunday
             else:
                 service_days = 127
@@ -74,13 +74,13 @@ def generate_route_schedules(routes):
             valid_until = None
 
             # Routes to train station might have limited hours
-            if route_number == 6:
+            if route_name == 6:
                 valid_from = time(5, 30)
                 valid_until = time(23, 0)
 
             route_schedules.append(
                 {
-                    "route_number": route_number,
+                    "route_name": route_name,
                     "departure_time": departure_time.strftime("%H:%M:%S"),
                     "service_days": service_days,
                     "valid_from": valid_from.strftime("%H:%M:%S") if valid_from else "",
@@ -103,7 +103,7 @@ def generate_stop_schedules(routes, route_stops, route_schedules):
     # Group route stops by route
     route_stops_by_route = {}
     for rs in route_stops:
-        route_num = rs["route_number"]
+        route_num = rs["route_name"]
         if route_num not in route_stops_by_route:
             route_stops_by_route[route_num] = []
         route_stops_by_route[route_num].append(rs)
@@ -114,7 +114,7 @@ def generate_stop_schedules(routes, route_stops, route_schedules):
 
     # Process each route schedule
     for schedule in route_schedules:
-        route_num = schedule["route_number"]
+        route_num = schedule["route_name"]
 
         if route_num not in route_stops_by_route:
             continue
@@ -154,7 +154,7 @@ def generate_stop_schedules(routes, route_stops, route_schedules):
 
             stop_schedules.append(
                 {
-                    "route_number": route_num,
+                    "route_name": route_num,
                     "stop_code": stop["stop_code"],
                     "arrival_time": arrival_time.strftime("%H:%M:%S"),
                     "is_active": "True",
@@ -192,7 +192,7 @@ def main():
 
     # Route schedules CSV
     route_schedule_fields = [
-        "route_number",
+        "route_name",
         "departure_time",
         "service_days",
         "valid_from",
@@ -205,7 +205,7 @@ def main():
 
     # Stop schedules CSV
     stop_schedule_fields = [
-        "route_number",
+        "route_name",
         "stop_code",
         "arrival_time",
         "is_active",
@@ -222,12 +222,12 @@ def main():
     # Show some sample data
     print("\nSample route schedule:")
     for i, rs in enumerate(route_schedules[:3]):
-        print(f"  Route {rs['route_number']} at {rs['departure_time']}")
+        print(f"  Route {rs['route_name']} at {rs['departure_time']}")
 
     print("\nSample stop schedule:")
     for i, ss in enumerate(stop_schedules[:5]):
         print(
-            f"  Route {ss['route_number']}, Stop {ss['stop_code']} at {ss['arrival_time']}"
+            f"  Route {ss['route_name']}, Stop {ss['stop_code']} at {ss['arrival_time']}"
         )
 
 

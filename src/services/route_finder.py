@@ -14,7 +14,7 @@ from database.models import BusRoute, BusStop, RouteStop, StopSchedule
 class RouteSegment:
     """Represents one segment of a journey."""
 
-    route_number: str
+    route_name: str
     origin_stop: BusStop
     destination_stop: BusStop
     departure_time: time
@@ -209,7 +209,7 @@ class RouteFinder:
                 destination_stop = dest_route_stop.bus_stop
 
                 segment = RouteSegment(
-                    route_number=orig_sched.route_number,
+                    route_name=orig_sched.route_name,
                     origin_stop=origin_stop,
                     destination_stop=destination_stop,
                     departure_time=orig_sched.arrival_time,
