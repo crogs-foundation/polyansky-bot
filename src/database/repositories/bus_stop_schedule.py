@@ -32,6 +32,22 @@ class BusStopScheduleRepository(BaseRepository[StopSchedule]):
         await self.session.refresh(stop_schedule)
         return stop_schedule
 
+    async def add_bulk(self, stop_schedules_data: list[dict]) -> None:
+        """Bulk create stop schedule entries."""
+        stop_schedules = []
+        for data in stop_schedules_data:
+            stop_schedules.append(
+                StopSchedule(
+                    route_number=data["route_number"],
+                    stop_code=data["stop_code"],
+                    arrival_time=data["arrival_time"],
+                    is_active=data.get("is_active", True),
+                )
+            )
+
+        self.session.add_all(stop_schedules)
+        await self.session.commit()
+
     async def get_by_route_and_stop(
         self, route_number: int, stop_code: str
     ) -> list[StopSchedule]:

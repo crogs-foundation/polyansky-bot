@@ -154,6 +154,9 @@ class RouteFinder:
                 origin_code not in route_stop_map
                 or destination_code not in route_stop_map
             ):
+                loguru.logger.debug(
+                    f"Route {route.route_number}: origin or destination not in route, skipping"
+                )
                 continue
 
             origin_route_stop = route_stop_map[origin_code]

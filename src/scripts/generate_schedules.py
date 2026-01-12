@@ -26,20 +26,14 @@ def generate_route_schedules(routes):
     # Pattern: (start_time, end_time, interval_minutes, peak_interval_minutes)
     patterns = {
         # High frequency routes (every 15-30 min)
-        "11": (time(6, 0), time(22, 30), 30, 15),
-        "12": (time(6, 10), time(22, 40), 30, 15),
+        "1": (time(6, 0), time(22, 30), 30, 15),
+        "2": (time(6, 10), time(22, 40), 30, 15),
         # Medium frequency routes (every 30-60 min)
-        "21": (time(6, 15), time(22, 15), 60, 30),
-        "22": (time(6, 45), time(22, 45), 60, 30),
-        "41": (time(6, 25), time(22, 25), 60, 30),
-        "42": (time(6, 55), time(22, 55), 60, 30),
+        "4": (time(6, 25), time(22, 25), 60, 30),
         # Lower frequency routes (every 60-120 min)
-        "31": (time(6, 20), time(22, 20), 120, 90),
-        "32": (time(6, 50), time(22, 50), 120, 90),
-        "51": (time(6, 40), time(22, 40), 90, 60),
-        "52": (time(7, 10), time(22, 10), 90, 60),
-        "61": (time(6, 5), time(22, 5), 90, 60),
-        "62": (time(6, 35), time(21, 35), 90, 60),
+        "3": (time(6, 20), time(22, 20), 120, 90),
+        "5": (time(6, 40), time(22, 40), 90, 60),
+        "6": (time(6, 5), time(22, 5), 90, 60),
     }
 
     for route in routes:
@@ -68,9 +62,9 @@ def generate_route_schedules(routes):
 
             # Determine service days
             # 127 = All days, 31 = Weekdays (Mon-Fri), 96 = Weekend (Sat-Sun)
-            if route_number in ["11", "12"]:  # Main routes run every day
+            if route_number in ["1", "2"]:  # Main routes run every day
                 service_days = 127
-            elif route_number in ["61", "62"]:  # Some routes might not run on Sunday
+            elif route_number == "6":  # Some routes might not run on Sunday
                 service_days = 126  # All days except Sunday
             else:
                 service_days = 127
@@ -80,7 +74,7 @@ def generate_route_schedules(routes):
             valid_until = None
 
             # Routes to train station might have limited hours
-            if route_number in ["61", "62"]:
+            if route_number == 6:
                 valid_from = time(5, 30)
                 valid_until = time(23, 0)
 

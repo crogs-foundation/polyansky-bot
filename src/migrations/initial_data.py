@@ -191,11 +191,12 @@ async def load_stop_schedules(
     route_mapping: dict,
 ):
     """
-    Load stop schedules from CSV.
+    Load stop schedules from CSV using bulk insert.
     """
     async with db_manager.session() as session:
         repo = BusStopScheduleRepository(session)
-        schedule_count = 0
+        schedule_data = []
+        skipped_count = 0
 
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -203,11 +204,13 @@ async def load_stop_schedules(
                 route = route_mapping.get(row["route_number"])
                 if not route:
                     print(f"Warning: Route {row['route_number']} not found")
+                    skipped_count += 1
                     continue
 
                 stop = stop_mapping.get(row["stop_code"])
                 if not stop:
                     print(f"Warning: Stop '{row['stop_code']}' not found")
+                    skipped_count += 1
                     continue
 
                 # Parse time
@@ -222,19 +225,28 @@ async def load_stop_schedules(
                     print(
                         f"Warning: Invalid time format '{row['arrival_time']}', skipping"
                     )
+                    skipped_count += 1
                     continue
 
-                await repo.add(
-                    route_number=route.route_number,
-                    stop_code=stop.code,
-                    arrival_time=arrival_time,
-                    is_active=row["is_active"].lower() == "true"
-                    if "is_active" in row
-                    else True,
+                schedule_data.append(
+                    {
+                        "route_number": route.route_number,
+                        "stop_code": stop.code,
+                        "arrival_time": arrival_time,
+                        "is_active": row["is_active"].lower() == "true"
+                        if "is_active" in row
+                        else True,
+                    }
                 )
-                schedule_count += 1
 
-        print(f"✓ Loaded {schedule_count} stop schedules from {csv_path}")
+        if schedule_data:
+            await repo.add_bulk(schedule_data)
+            print(
+                f"✓ Loaded {len(schedule_data)} stop schedules from {csv_path} (bulk insert)"
+            )
+
+        if skipped_count > 0:
+            print(f"  Note: Skipped {skipped_count} invalid entries")
 
 
 async def main():
