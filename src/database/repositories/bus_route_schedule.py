@@ -15,7 +15,7 @@ class BusRouteScheduleRepository(BaseRepository[RouteSchedule]):
 
     async def add(  # Add create method
         self,
-        route_number: int,
+        route_name: str,
         departure_time: time,
         service_days: int = 127,
         is_active: bool = True,
@@ -26,7 +26,7 @@ class BusRouteScheduleRepository(BaseRepository[RouteSchedule]):
         )
 
         route_schedule = RouteSchedule(
-            route_number=route_number,
+            route_name=route_name,
             departure_time=departure_time,
             is_active=is_active,
             monday=monday,

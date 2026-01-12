@@ -1,7 +1,14 @@
-route_number,origin_stop_code,destination_stop_code,description,color,is_active
+name,origin_stop_code,destination_stop_code,description,color,is_active
 1,VOKZAL2,VOKZAL1,"",#e100ffff,True
-2,VOKZAL2,VOKZAL1,"",#004cffff,True
+1 до ЦРБ,VOKZAL2,TSRB01C,"",#ff0062ff,True
+2,VOKZAL2,VOKZAL1,"",#00eeffff,True
 3,PEREEZD,PEREEZB,"",#00ff48ff,True
+3 до ЦРБ,PEREEZD,TSRB01A,"",#039a26ff,True
+3 от ЦРБ,TSRB01A,PEREEZB,"",#aaff00ff,True
+3 через ГИБДД,PEREEZD,PEREEZB,"",#00d18bff,True
 4,VOKZAL2,VOKZAL1,"",#eaff00ff,True
-5,VOKZAL2,VOKZAL1,"",#ff004cff,True
-6,VOKZAL2,TSRB01A,"",#00eeffff,True
+4 от ЦРБ,VOKZAL2,VOKZAL1,"",#ffcc00ff,True
+5,VOKZAL2,VOKZAL1,"",#8d3ff9ff,True
+6,VOKZAL2,TSRB01A,"",#0400ffff,True
+6 от ЦРБ,VOKZAL2,TSRB01A,"",#6562f8ff,True
+6 до ЦРБ,VOKZAL2,TSRB01A,"",#020084ff,True

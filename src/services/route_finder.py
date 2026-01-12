@@ -126,7 +126,7 @@ class RouteFinder:
             select(BusRoute)
             .join(
                 RouteStop,
-                BusRoute.route_number == RouteStop.route_number,
+                BusRoute.name == RouteStop.route_name,
             )
             .where(
                 and_(
@@ -156,7 +156,7 @@ class RouteFinder:
                 or destination_code not in route_stop_map
             ):
                 loguru.logger.debug(
-                    f"Route {route.route_number}: origin or destination not in route, skipping"
+                    f"Route {route.name}: origin or destination not in route, skipping"
                 )
                 continue
 
@@ -166,7 +166,7 @@ class RouteFinder:
             # Validate order: destination must come after origin
             if dest_route_stop.stop_order <= origin_route_stop.stop_order:
                 loguru.logger.debug(
-                    f"Route {route.route_number}: destination before origin, skipping"
+                    f"Route {route.name}: destination before origin, skipping"
                 )
                 continue
 
@@ -183,7 +183,7 @@ class RouteFinder:
             ]
 
             if not origin_schedules or not dest_schedules:
-                loguru.logger.debug(f"Route {route.route_number}: missing schedules")
+                loguru.logger.debug(f"Route {route.name}: missing schedules")
                 continue
 
             available_routes.append((route, origin_schedules[-1]))
@@ -229,7 +229,7 @@ class RouteFinder:
             loguru.logger.debug(
                 "No journeys found. "
                 + ";".join(
-                    f"Route {route.route_number}: last bus has already departed at {departed.arrival_time}"
+                    f"Route {route.name}: last bus has already departed at {departed.arrival_time}"
                     for (route, departed) in available_routes
                 )
             )

@@ -56,7 +56,7 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
     Load bus routes from CSV.
 
     Returns:
-        dict: Mapping of (route_number, origin_code, destination_code) to route object
+        dict: Mapping of (name, origin_code, destination_code) to route object
     """
     async with db_manager.session() as session:
         repo = BusRouteRepository(session)
@@ -66,7 +66,7 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
             reader = csv.DictReader(f)
             for row in reader:
                 route = await repo.create(
-                    route_number=row["route_number"],
+                    name=row["name"],
                     origin_stop_code=row["origin_stop_code"],
                     destination_stop_code=row["destination_stop_code"],
                     description=row["description"]
@@ -76,7 +76,7 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
                     is_active=row["is_active"].lower() == "true",
                 )
 
-                route_mapping[row["route_number"]] = route
+                route_mapping[row["name"]] = route
 
         print(f"✓ Loaded {len(route_mapping)} bus routes from {csv_path}")
         return route_mapping
@@ -98,9 +98,9 @@ async def load_route_stops(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                route = route_mapping.get(row["route_number"])
+                route = route_mapping.get(row["route_name"])
                 if not route:
-                    print(f"Warning: Route {row['route_number']} not found")
+                    print(f"Warning: Route {row['route_name']} not found")
                     continue
 
                 stop = stop_mapping.get(row["stop_code"])
@@ -109,7 +109,7 @@ async def load_route_stops(
                     continue
 
                 await repo.add(
-                    route_number=route.route_number,
+                    route_name=route.route_name,
                     stop_code=stop.code,
                     stop_order=int(row["stop_order"]),
                 )
@@ -133,9 +133,9 @@ async def load_route_schedules(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                route = route_mapping.get(row["route_number"])
+                route = route_mapping.get(row["route_name"])
                 if not route:
-                    print(f"Warning: Route {row['route_number']} not found")
+                    print(f"Warning: Route {row['route_name']} not found")
                     continue
 
                 # Parse time
@@ -150,7 +150,7 @@ async def load_route_schedules(
                     int(row["service_days"]) if row.get("service_days") else 127
                 )
                 await repo.add(
-                    route_number=route.route_number,
+                    route_name=route.name,
                     departure_time=departure_time,
                     service_days=service_days,
                     is_active=row["is_active"].lower() == "true"
@@ -179,9 +179,9 @@ async def load_stop_schedules(
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                route = route_mapping.get(row["route_number"])
+                route = route_mapping.get(row["route_name"])
                 if not route:
-                    print(f"Warning: Route {row['route_number']} not found")
+                    print(f"Warning: Route {row['route_name']} not found")
                     skipped_count += 1
                     continue
 
@@ -211,7 +211,7 @@ async def load_stop_schedules(
 
                 schedule_data.append(
                     {
-                        "route_number": route.route_number,
+                        "route_name": route.route_name,
                         "stop_code": stop.code,
                         "arrival_time": arrival_time,
                         "is_active": row["is_active"].lower() == "true"

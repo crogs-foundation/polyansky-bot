@@ -76,7 +76,7 @@ class BusStopScheduleRepository(BaseRepository[StopSchedule]):
         """Get all stop schedules for a specific route and stop."""
         query = await self.session.execute(
             self._get_base_query()
-            .filter(StopSchedule.route_number == route_number)
+            .filter(StopSchedule.route_name == route_number)
             .filter(StopSchedule.stop_code == stop_code)
             .order_by(StopSchedule.arrival_time)
         )
@@ -99,7 +99,7 @@ class BusStopScheduleRepository(BaseRepository[StopSchedule]):
         """Get all active stop schedules for a specific route."""
         query = await self.session.execute(
             self._get_base_query()
-            .filter(StopSchedule.route_number == route_number)
+            .filter(StopSchedule.route_name == route_number)
             .filter(StopSchedule.is_active)
             .order_by(StopSchedule.arrival_time)
         )

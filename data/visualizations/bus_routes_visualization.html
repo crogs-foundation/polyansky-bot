@@ -1,0 +1,3882 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_475c9dedbe65d1cd17d21d50ae0a47d1 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-textpath@1.2.3/leaflet.textpath.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.css"/>
+</head>
+<body>
+
+
+    <div style="
+        position: fixed;
+        bottom: 50px;
+        left: 50px;
+        width: 200px;
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: white;
+        border: 2px solid grey;
+        z-index: 9999;
+        font-size: 12px;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 3px 3px 5px rgba(0,0,0,0.2);">
+        <b>Map Legend</b><br>
+        <hr style="margin: 5px 0;">
+
+        <div style="margin-bottom: 8px;">
+            <b style="font-size: 11px;">Route Controls:</b>
+            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <button id="selectAllRoutes" style="
+                    flex: 1;
+                    padding: 4px 8px;
+                    font-size: 10px;
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    ✓ All
+                </button>
+                <button id="deselectAllRoutes" style="
+                    flex: 1;
+                    padding: 4px 8px;
+                    font-size: 10px;
+                    background-color: #f44336;
+                    color: white;
+                    border: none;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    ✗ None
+                </button>
+            </div>
+        </div>
+
+        <hr style="margin: 5px 0;">
+
+        <div style="display: flex; align-items: center; margin: 3px 0;">
+            <div style="width: 12px; height: 12px; background-color: lightgreen;
+                 border: 3px solid green; border-radius: 50%; margin-right: 8px;"></div>
+            Route Start
+        </div>
+        <div style="display: flex; align-items: center; margin: 3px 0;">
+            <div style="width: 12px; height: 12px; background-color: lightcoral;
+                 border: 3px solid red; border-radius: 50%; margin-right: 8px;"></div>
+            Route End
+        </div>
+        <div style="display: flex; align-items: center; margin: 3px 0;">
+            <div style="width: 12px; height: 12px; background-color: lightblue;
+                 border: 2px solid darkblue; border-radius: 50%; margin-right: 8px;"></div>
+            Bus Stop
+        </div>
+
+        <hr style="margin: 8px 0;">
+        <b style="font-size: 11px;">Routes:</b>
+        <div style="margin-top: 5px;">
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #e100ff; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 1</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #ff0062; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 1 до ЦРБ</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #00eeff; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 2</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #00ff48; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 3</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #039a26; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 3 до ЦРБ</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #aaff00; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 3 от ЦРБ</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #00d18b; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 3 через ГИБДД</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #eaff00; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 4</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #ffcc00; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 4 от ЦРБ</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #8d3ff9; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 5</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #0400ff; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 6</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #020084; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 6 до ЦРБ</span>
+            </div>
+
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <div style="width: 30px; height: 4px; background-color: #6562f8; margin-right: 8px;"></div>
+                <span style="font-size: 11px;">Route 6 от ЦРБ</span>
+            </div>
+
+        </div>
+
+        <hr style="margin: 8px 0;">
+        <div style="font-size: 10px; color: #666;">
+            💡 Click lines/markers for details
+        </div>
+    </div>
+
+
+    <script>
+    (function() {
+        // Wait for map to be fully loaded
+        window.addEventListener('load', function() {
+            // Get all layer checkboxes
+            function getLayerCheckboxes() {
+                // Get the layer control container
+                var layerControl = document.querySelector('.leaflet-control-layers-overlays');
+                if (!layerControl) {
+                    console.warn('Layer control not found');
+                    return [];
+                }
+
+                // Get all input elements (checkboxes)
+                var inputs = layerControl.querySelectorAll('input[type="checkbox"]');
+                return Array.from(inputs);
+            }
+
+            // Get route checkboxes (exclude stops layer)
+            function getRouteCheckboxes() {
+                var allCheckboxes = getLayerCheckboxes();
+                return allCheckboxes.filter(function(cb) {
+                    var label = cb.parentElement.querySelector('span');
+                    return label && label.textContent.includes('🚌 Route');
+                });
+            }
+
+            // Save current layer states to URL
+            function saveStateToURL() {
+                var checkboxes = getLayerCheckboxes();
+                var states = {};
+
+                checkboxes.forEach(function(cb) {
+                    var label = cb.parentElement.querySelector('span');
+                    if (label) {
+                        var layerName = label.textContent.trim();
+                        states[layerName] = cb.checked;
+                    }
+                });
+
+                // Encode states as URL parameter
+                var stateParam = btoa(JSON.stringify(states));
+                var url = new URL(window.location);
+                url.searchParams.set('layers', stateParam);
+
+                // Update URL without reloading page
+                window.history.replaceState({}, '', url);
+            }
+
+            // Load layer states from URL
+            function loadStateFromURL() {
+                var url = new URL(window.location);
+                var stateParam = url.searchParams.get('layers');
+
+                if (!stateParam) return;
+
+                try {
+                    var states = JSON.parse(atob(stateParam));
+                    var checkboxes = getLayerCheckboxes();
+
+                    checkboxes.forEach(function(cb) {
+                        var label = cb.parentElement.querySelector('span');
+                        if (label) {
+                            var layerName = label.textContent.trim();
+                            if (layerName in states) {
+                                // Trigger click only if state differs
+                                if (cb.checked !== states[layerName]) {
+                                    cb.click();
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to load layer state from URL:', e);
+                }
+            }
+
+            // Select all routes
+            function selectAllRoutes() {
+                var routeCheckboxes = getRouteCheckboxes();
+                routeCheckboxes.forEach(function(cb) {
+                    if (!cb.checked) {
+                        cb.click();
+                    }
+                });
+                saveStateToURL();
+            }
+
+            // Deselect all routes
+            function deselectAllRoutes() {
+                var routeCheckboxes = getRouteCheckboxes();
+                routeCheckboxes.forEach(function(cb) {
+                    if (cb.checked) {
+                        cb.click();
+                    }
+                });
+                saveStateToURL();
+            }
+
+            // Add event listeners to checkboxes to save state on change
+            function attachCheckboxListeners() {
+                var checkboxes = getLayerCheckboxes();
+                checkboxes.forEach(function(cb) {
+                    cb.addEventListener('change', function() {
+                        saveStateToURL();
+                    });
+                });
+            }
+
+            // Attach button event listeners
+            var selectAllBtn = document.getElementById('selectAllRoutes');
+            var deselectAllBtn = document.getElementById('deselectAllRoutes');
+
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', selectAllRoutes);
+            }
+
+            if (deselectAllBtn) {
+                deselectAllBtn.addEventListener('click', deselectAllRoutes);
+            }
+
+            // Wait a bit for Leaflet to fully initialize layers
+            setTimeout(function() {
+                attachCheckboxListeners();
+                loadStateFromURL();
+            }, 500);
+        });
+    })();
+    </script>
+
+
+            <div class="folium-map" id="map_475c9dedbe65d1cd17d21d50ae0a47d1" ></div>
+
+</body>
+<script>
+
+
+            var map_475c9dedbe65d1cd17d21d50ae0a47d1 = L.map(
+                "map_475c9dedbe65d1cd17d21d50ae0a47d1",
+                {
+                    center: [56.225160200000005, 51.06583827313433],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 13,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+
+
+
+
+            var tile_layer_a3f8a948e299bf913cf7ed57de4c0365 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+
+
+            tile_layer_a3f8a948e299bf913cf7ed57de4c0365.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            L.control.fullscreen(
+                {
+  "position": "topleft",
+  "title": "Full Screen",
+  "titleCancel": "Exit Full Screen",
+  "forceSeparateButton": false,
+}
+            ).addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_5537a7f2648f321e00b38b0e1784cb74 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_a03c3927567a13ebe1e207a8183c5c66 = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2321811, 51.0761039], [56.2328613, 51.0854599], [56.2282908, 51.0876542], [56.2256921, 51.0875601], [56.2241931, 51.0846136], [56.2198523, 51.0848433], [56.2184161, 51.0811579], [56.2196808, 51.0785991], [56.2246372, 51.0746683], [56.2284466, 51.0715784], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#e100ff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e100ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_5537a7f2648f321e00b38b0e1784cb74);
+
+
+        var popup_3be69a239d807b66c7b6ce4c9a0f9563 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_6b110ef5ac359a13c3e36371b0bebf1e = $(`<div id="html_6b110ef5ac359a13c3e36371b0bebf1e" style="width: 100.0%; height: 100.0%;"><b>Route 1</b><br>From: VOKZAL2<br>To: VOKZAL1<br>Stops: 22<br><div style='width:50px;height:20px;background-color:#e100ff;border:1px solid black;'></div></div>`)[0];
+                popup_3be69a239d807b66c7b6ce4c9a0f9563.setContent(html_6b110ef5ac359a13c3e36371b0bebf1e);
+
+
+
+        poly_line_a03c3927567a13ebe1e207a8183c5c66.bindPopup(popup_3be69a239d807b66c7b6ce4c9a0f9563)
+        ;
+
+
+
+
+            poly_line_a03c3927567a13ebe1e207a8183c5c66.bindTooltip(
+                `<div>
+                     Route 1: VOKZAL2 → VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_a03c3927567a13ebe1e207a8183c5c66.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#e100ff",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_bfe1957b4460cdc629d8e137126583f2 = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_5537a7f2648f321e00b38b0e1784cb74);
+
+
+        var popup_9aba8b52eb2236512d6a28f6a30cc5b7 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_7433d094aea227b14a7c97726914363d = $(`<div id="html_7433d094aea227b14a7c97726914363d" style="width: 100.0%; height: 100.0%;"><b>Route 1 Start</b><br>VOKZAL2</div>`)[0];
+                popup_9aba8b52eb2236512d6a28f6a30cc5b7.setContent(html_7433d094aea227b14a7c97726914363d);
+
+
+
+        circle_marker_bfe1957b4460cdc629d8e137126583f2.bindPopup(popup_9aba8b52eb2236512d6a28f6a30cc5b7)
+        ;
+
+
+
+
+            circle_marker_bfe1957b4460cdc629d8e137126583f2.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_1969ba35ab04b2f6dde1304524e40142 = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_5537a7f2648f321e00b38b0e1784cb74);
+
+
+        var popup_4bc338ba179621ee635ad3db0b061857 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_8afee8cd7e53b4d77dfd05c3770c060e = $(`<div id="html_8afee8cd7e53b4d77dfd05c3770c060e" style="width: 100.0%; height: 100.0%;"><b>Route 1 End</b><br>VOKZAL1</div>`)[0];
+                popup_4bc338ba179621ee635ad3db0b061857.setContent(html_8afee8cd7e53b4d77dfd05c3770c060e);
+
+
+
+        circle_marker_1969ba35ab04b2f6dde1304524e40142.bindPopup(popup_4bc338ba179621ee635ad3db0b061857)
+        ;
+
+
+
+
+            circle_marker_1969ba35ab04b2f6dde1304524e40142.bindTooltip(
+                `<div>
+                     End: VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_5537a7f2648f321e00b38b0e1784cb74.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_652f1e13b3630ca66e66b64f2881e446 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_a73e953810b40fa4e7640ee87c478d8c = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2321811, 51.0761039], [56.2328613, 51.0854599], [56.2282908, 51.0876542], [56.2256921, 51.0875601], [56.2241931, 51.0846136], [56.2198523, 51.0848433], [56.2184161, 51.0811579]],
+                {"bubblingMouseEvents": true, "color": "#ff0062", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#ff0062", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_652f1e13b3630ca66e66b64f2881e446);
+
+
+        var popup_1a240129abaf820895db273bbddff2d6 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_606218a7303c02e82c9d606ad0e43e81 = $(`<div id="html_606218a7303c02e82c9d606ad0e43e81" style="width: 100.0%; height: 100.0%;"><b>Route 1 до ЦРБ</b><br>From: VOKZAL2<br>To: TSRB01C<br>Stops: 13<br><div style='width:50px;height:20px;background-color:#ff0062;border:1px solid black;'></div></div>`)[0];
+                popup_1a240129abaf820895db273bbddff2d6.setContent(html_606218a7303c02e82c9d606ad0e43e81);
+
+
+
+        poly_line_a73e953810b40fa4e7640ee87c478d8c.bindPopup(popup_1a240129abaf820895db273bbddff2d6)
+        ;
+
+
+
+
+            poly_line_a73e953810b40fa4e7640ee87c478d8c.bindTooltip(
+                `<div>
+                     Route 1 до ЦРБ: VOKZAL2 → TSRB01C
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_a73e953810b40fa4e7640ee87c478d8c.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#ff0062",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_ce2f80f3717914edc08e2d2269c41365 = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_652f1e13b3630ca66e66b64f2881e446);
+
+
+        var popup_69f654cbbfc65ecd884efd6ecbecec28 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_667eb7b585748dce7fa5f3c001e6885b = $(`<div id="html_667eb7b585748dce7fa5f3c001e6885b" style="width: 100.0%; height: 100.0%;"><b>Route 1 до ЦРБ Start</b><br>VOKZAL2</div>`)[0];
+                popup_69f654cbbfc65ecd884efd6ecbecec28.setContent(html_667eb7b585748dce7fa5f3c001e6885b);
+
+
+
+        circle_marker_ce2f80f3717914edc08e2d2269c41365.bindPopup(popup_69f654cbbfc65ecd884efd6ecbecec28)
+        ;
+
+
+
+
+            circle_marker_ce2f80f3717914edc08e2d2269c41365.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_4176c0e107b9ae31e63ea554ddc2a399 = L.circleMarker(
+                [56.2184161, 51.0811579],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_652f1e13b3630ca66e66b64f2881e446);
+
+
+        var popup_582567dd20ce651fc64beb7ee2a6e38d = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_dee977eb32aeeaf4d9f8074e99754983 = $(`<div id="html_dee977eb32aeeaf4d9f8074e99754983" style="width: 100.0%; height: 100.0%;"><b>Route 1 до ЦРБ End</b><br>TSRB01C</div>`)[0];
+                popup_582567dd20ce651fc64beb7ee2a6e38d.setContent(html_dee977eb32aeeaf4d9f8074e99754983);
+
+
+
+        circle_marker_4176c0e107b9ae31e63ea554ddc2a399.bindPopup(popup_582567dd20ce651fc64beb7ee2a6e38d)
+        ;
+
+
+
+
+            circle_marker_4176c0e107b9ae31e63ea554ddc2a399.bindTooltip(
+                `<div>
+                     End: TSRB01C
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_652f1e13b3630ca66e66b64f2881e446.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_3c80bb82063b1780dc47bdfa55850b1c = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_913b33aeafd20ac1e1f2df6c814377bc = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684], [56.2194798, 51.0850739], [56.2244147, 51.084803], [56.2265483, 51.0878366], [56.2285771, 51.0879255], [56.2329884, 51.0870464], [56.2326814, 51.07732], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#00eeff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#00eeff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_3c80bb82063b1780dc47bdfa55850b1c);
+
+
+        var popup_110ba90f2ec863eb8a61372a375da002 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_da85414287d19a7296573fe6de24d467 = $(`<div id="html_da85414287d19a7296573fe6de24d467" style="width: 100.0%; height: 100.0%;"><b>Route 2</b><br>From: VOKZAL2<br>To: VOKZAL1<br>Stops: 22<br><div style='width:50px;height:20px;background-color:#00eeff;border:1px solid black;'></div></div>`)[0];
+                popup_110ba90f2ec863eb8a61372a375da002.setContent(html_da85414287d19a7296573fe6de24d467);
+
+
+
+        poly_line_913b33aeafd20ac1e1f2df6c814377bc.bindPopup(popup_110ba90f2ec863eb8a61372a375da002)
+        ;
+
+
+
+
+            poly_line_913b33aeafd20ac1e1f2df6c814377bc.bindTooltip(
+                `<div>
+                     Route 2: VOKZAL2 → VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_913b33aeafd20ac1e1f2df6c814377bc.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#00eeff",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_6ed8bd0c15d86b1ed16643c0da2747b0 = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_3c80bb82063b1780dc47bdfa55850b1c);
+
+
+        var popup_da2ce15fbbbbadecc063f9bbc823efec = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_c2cc8aa55817a588b2ae58eb2af78fe8 = $(`<div id="html_c2cc8aa55817a588b2ae58eb2af78fe8" style="width: 100.0%; height: 100.0%;"><b>Route 2 Start</b><br>VOKZAL2</div>`)[0];
+                popup_da2ce15fbbbbadecc063f9bbc823efec.setContent(html_c2cc8aa55817a588b2ae58eb2af78fe8);
+
+
+
+        circle_marker_6ed8bd0c15d86b1ed16643c0da2747b0.bindPopup(popup_da2ce15fbbbbadecc063f9bbc823efec)
+        ;
+
+
+
+
+            circle_marker_6ed8bd0c15d86b1ed16643c0da2747b0.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_944dffb9e88ce41e530f14c8bd97315d = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_3c80bb82063b1780dc47bdfa55850b1c);
+
+
+        var popup_0bdc3662f1b02b3588dcff152d9c7ca6 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_cad58be0b38c70b5240322d5c6bb1bfa = $(`<div id="html_cad58be0b38c70b5240322d5c6bb1bfa" style="width: 100.0%; height: 100.0%;"><b>Route 2 End</b><br>VOKZAL1</div>`)[0];
+                popup_0bdc3662f1b02b3588dcff152d9c7ca6.setContent(html_cad58be0b38c70b5240322d5c6bb1bfa);
+
+
+
+        circle_marker_944dffb9e88ce41e530f14c8bd97315d.bindPopup(popup_0bdc3662f1b02b3588dcff152d9c7ca6)
+        ;
+
+
+
+
+            circle_marker_944dffb9e88ce41e530f14c8bd97315d.bindTooltip(
+                `<div>
+                     End: VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_3c80bb82063b1780dc47bdfa55850b1c.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_0442ee4b2a599e4414c77b64fb3a2bcd = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_8b0a4ec2f0f7a42718acfb918524c59d = L.polyline(
+                [[56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.228795, 51.033545], [56.2220341, 51.0309187], [56.2191342, 51.0363154], [56.2209321, 51.0418894], [56.2235645, 51.0490564], [56.2269663, 51.0557841], [56.2287702, 51.0629659], [56.2300003, 51.0677921], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684], [56.2248016, 51.07941], [56.2271978, 51.0707517], [56.2290781, 51.0634702], [56.2268348, 51.0547236], [56.2234261, 51.0484095], [56.2214706, 51.043072], [56.2191452, 51.0354658], [56.2225485, 51.0326797], [56.2291396, 51.0339024], [56.2312752, 51.0380621], [56.2369951, 51.0437778]],
+                {"bubblingMouseEvents": true, "color": "#00ff48", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#00ff48", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_0442ee4b2a599e4414c77b64fb3a2bcd);
+
+
+        var popup_b3725958ac89fe1737e038d3b678c664 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_2862c444c525b7fb928ea27c73e7542a = $(`<div id="html_2862c444c525b7fb928ea27c73e7542a" style="width: 100.0%; height: 100.0%;"><b>Route 3</b><br>From: PEREEZD<br>To: PEREEZB<br>Stops: 25<br><div style='width:50px;height:20px;background-color:#00ff48;border:1px solid black;'></div></div>`)[0];
+                popup_b3725958ac89fe1737e038d3b678c664.setContent(html_2862c444c525b7fb928ea27c73e7542a);
+
+
+
+        poly_line_8b0a4ec2f0f7a42718acfb918524c59d.bindPopup(popup_b3725958ac89fe1737e038d3b678c664)
+        ;
+
+
+
+
+            poly_line_8b0a4ec2f0f7a42718acfb918524c59d.bindTooltip(
+                `<div>
+                     Route 3: PEREEZD → PEREEZB
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_8b0a4ec2f0f7a42718acfb918524c59d.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#00ff48",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_796f3c2c2bd13d0e7dd7a24339628b35 = L.circleMarker(
+                [56.2372939, 51.0438105],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_0442ee4b2a599e4414c77b64fb3a2bcd);
+
+
+        var popup_b75ab73780c08983e240b02f00eada3c = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_29d8d0639b3c4bb13c409f34ee23a37a = $(`<div id="html_29d8d0639b3c4bb13c409f34ee23a37a" style="width: 100.0%; height: 100.0%;"><b>Route 3 Start</b><br>PEREEZD</div>`)[0];
+                popup_b75ab73780c08983e240b02f00eada3c.setContent(html_29d8d0639b3c4bb13c409f34ee23a37a);
+
+
+
+        circle_marker_796f3c2c2bd13d0e7dd7a24339628b35.bindPopup(popup_b75ab73780c08983e240b02f00eada3c)
+        ;
+
+
+
+
+            circle_marker_796f3c2c2bd13d0e7dd7a24339628b35.bindTooltip(
+                `<div>
+                     Start: PEREEZD
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_f88bd4d8e2156a5df313efb291471059 = L.circleMarker(
+                [56.2369951, 51.0437778],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_0442ee4b2a599e4414c77b64fb3a2bcd);
+
+
+        var popup_496265b01040730b34354c431139c5bf = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_a466eac93531f8ed99913b38292d0272 = $(`<div id="html_a466eac93531f8ed99913b38292d0272" style="width: 100.0%; height: 100.0%;"><b>Route 3 End</b><br>PEREEZB</div>`)[0];
+                popup_496265b01040730b34354c431139c5bf.setContent(html_a466eac93531f8ed99913b38292d0272);
+
+
+
+        circle_marker_f88bd4d8e2156a5df313efb291471059.bindPopup(popup_496265b01040730b34354c431139c5bf)
+        ;
+
+
+
+
+            circle_marker_f88bd4d8e2156a5df313efb291471059.bindTooltip(
+                `<div>
+                     End: PEREEZB
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_0442ee4b2a599e4414c77b64fb3a2bcd.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_5b08ed17af05b70e44065979f780a529 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_81b4692fd8d03b9eb72e768f9b0796c4 = L.polyline(
+                [[56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.228795, 51.033545], [56.2220341, 51.0309187], [56.2191342, 51.0363154], [56.2209321, 51.0418894], [56.2235645, 51.0490564], [56.2269663, 51.0557841], [56.2287702, 51.0629659], [56.2300003, 51.0677921], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684]],
+                {"bubblingMouseEvents": true, "color": "#039a26", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#039a26", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_5b08ed17af05b70e44065979f780a529);
+
+
+        var popup_b05ef0679987b3bd213a3427da2c4b7a = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_66487ba212c7ce1763255138a58e5f29 = $(`<div id="html_66487ba212c7ce1763255138a58e5f29" style="width: 100.0%; height: 100.0%;"><b>Route 3 до ЦРБ</b><br>From: PEREEZD<br>To: TSRB01A<br>Stops: 14<br><div style='width:50px;height:20px;background-color:#039a26;border:1px solid black;'></div></div>`)[0];
+                popup_b05ef0679987b3bd213a3427da2c4b7a.setContent(html_66487ba212c7ce1763255138a58e5f29);
+
+
+
+        poly_line_81b4692fd8d03b9eb72e768f9b0796c4.bindPopup(popup_b05ef0679987b3bd213a3427da2c4b7a)
+        ;
+
+
+
+
+            poly_line_81b4692fd8d03b9eb72e768f9b0796c4.bindTooltip(
+                `<div>
+                     Route 3 до ЦРБ: PEREEZD → TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_81b4692fd8d03b9eb72e768f9b0796c4.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#039a26",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_a18ebd17d590191bcb91ebb507f6f222 = L.circleMarker(
+                [56.2372939, 51.0438105],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_5b08ed17af05b70e44065979f780a529);
+
+
+        var popup_4d9d5659cfdcad58ffd1aba018ed3202 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_637a0eb6f371d893ea2a42c47fdc744b = $(`<div id="html_637a0eb6f371d893ea2a42c47fdc744b" style="width: 100.0%; height: 100.0%;"><b>Route 3 до ЦРБ Start</b><br>PEREEZD</div>`)[0];
+                popup_4d9d5659cfdcad58ffd1aba018ed3202.setContent(html_637a0eb6f371d893ea2a42c47fdc744b);
+
+
+
+        circle_marker_a18ebd17d590191bcb91ebb507f6f222.bindPopup(popup_4d9d5659cfdcad58ffd1aba018ed3202)
+        ;
+
+
+
+
+            circle_marker_a18ebd17d590191bcb91ebb507f6f222.bindTooltip(
+                `<div>
+                     Start: PEREEZD
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_644a93931bdbee5f69512e68495703da = L.circleMarker(
+                [56.218171, 51.0805684],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_5b08ed17af05b70e44065979f780a529);
+
+
+        var popup_b503d0d7cd34051130f50f24b8d5b0de = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_f3ae0c79729d26139590526ed19fc0c5 = $(`<div id="html_f3ae0c79729d26139590526ed19fc0c5" style="width: 100.0%; height: 100.0%;"><b>Route 3 до ЦРБ End</b><br>TSRB01A</div>`)[0];
+                popup_b503d0d7cd34051130f50f24b8d5b0de.setContent(html_f3ae0c79729d26139590526ed19fc0c5);
+
+
+
+        circle_marker_644a93931bdbee5f69512e68495703da.bindPopup(popup_b503d0d7cd34051130f50f24b8d5b0de)
+        ;
+
+
+
+
+            circle_marker_644a93931bdbee5f69512e68495703da.bindTooltip(
+                `<div>
+                     End: TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_5b08ed17af05b70e44065979f780a529.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_58815050933b94eb24432360798242d2 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_d89c6a0924a196e91b336d2f1d29e5b0 = L.polyline(
+                [[56.218171, 51.0805684], [56.2248016, 51.07941], [56.2271978, 51.0707517], [56.2290781, 51.0634702], [56.2268348, 51.0547236], [56.2234261, 51.0484095], [56.2214706, 51.043072], [56.2191452, 51.0354658], [56.2225485, 51.0326797], [56.2291396, 51.0339024], [56.2312752, 51.0380621], [56.2369951, 51.0437778]],
+                {"bubblingMouseEvents": true, "color": "#aaff00", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#aaff00", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_58815050933b94eb24432360798242d2);
+
+
+        var popup_f52c39b51119c314effd4e46e43b5362 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_4737ad5b9c5d6810df37b6f1785f6d53 = $(`<div id="html_4737ad5b9c5d6810df37b6f1785f6d53" style="width: 100.0%; height: 100.0%;"><b>Route 3 от ЦРБ</b><br>From: TSRB01A<br>To: PEREEZB<br>Stops: 12<br><div style='width:50px;height:20px;background-color:#aaff00;border:1px solid black;'></div></div>`)[0];
+                popup_f52c39b51119c314effd4e46e43b5362.setContent(html_4737ad5b9c5d6810df37b6f1785f6d53);
+
+
+
+        poly_line_d89c6a0924a196e91b336d2f1d29e5b0.bindPopup(popup_f52c39b51119c314effd4e46e43b5362)
+        ;
+
+
+
+
+            poly_line_d89c6a0924a196e91b336d2f1d29e5b0.bindTooltip(
+                `<div>
+                     Route 3 от ЦРБ: TSRB01A → PEREEZB
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_d89c6a0924a196e91b336d2f1d29e5b0.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#aaff00",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_ba89764f49b32155640edc765773ae27 = L.circleMarker(
+                [56.218171, 51.0805684],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_58815050933b94eb24432360798242d2);
+
+
+        var popup_1e639406b29a5f7979aa38c77e41e53a = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_391bce2306b3c7e530ec6a6a1c31f493 = $(`<div id="html_391bce2306b3c7e530ec6a6a1c31f493" style="width: 100.0%; height: 100.0%;"><b>Route 3 от ЦРБ Start</b><br>TSRB01A</div>`)[0];
+                popup_1e639406b29a5f7979aa38c77e41e53a.setContent(html_391bce2306b3c7e530ec6a6a1c31f493);
+
+
+
+        circle_marker_ba89764f49b32155640edc765773ae27.bindPopup(popup_1e639406b29a5f7979aa38c77e41e53a)
+        ;
+
+
+
+
+            circle_marker_ba89764f49b32155640edc765773ae27.bindTooltip(
+                `<div>
+                     Start: TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_a592e5f7b5b3f6c45201f8c8bfa05b41 = L.circleMarker(
+                [56.2369951, 51.0437778],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_58815050933b94eb24432360798242d2);
+
+
+        var popup_57200d312bbe5e69343342b1c0369004 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_7cd0992827c035689949313dc5de2de1 = $(`<div id="html_7cd0992827c035689949313dc5de2de1" style="width: 100.0%; height: 100.0%;"><b>Route 3 от ЦРБ End</b><br>PEREEZB</div>`)[0];
+                popup_57200d312bbe5e69343342b1c0369004.setContent(html_7cd0992827c035689949313dc5de2de1);
+
+
+
+        circle_marker_a592e5f7b5b3f6c45201f8c8bfa05b41.bindPopup(popup_57200d312bbe5e69343342b1c0369004)
+        ;
+
+
+
+
+            circle_marker_a592e5f7b5b3f6c45201f8c8bfa05b41.bindTooltip(
+                `<div>
+                     End: PEREEZB
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_58815050933b94eb24432360798242d2.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_276d15838562eba9f243a75def742f89 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_42768206f8848a0fdcff69eebf6dfb8c = L.polyline(
+                [[56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.228795, 51.033545], [56.2220341, 51.0309187], [56.2191342, 51.0363154], [56.2209321, 51.0418894], [56.2235645, 51.0490564], [56.2269663, 51.0557841], [56.2287702, 51.0629659], [56.2300003, 51.0677921], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684], [56.2256864, 51.0801692], [56.2280534, 51.0801347], [56.2311752, 51.0798339], [56.2326814, 51.07732], [56.2290781, 51.0634702], [56.2268348, 51.0547236], [56.2234261, 51.0484095], [56.2214706, 51.043072], [56.2191452, 51.0354658], [56.2225485, 51.0326797], [56.2291396, 51.0339024], [56.2312752, 51.0380621], [56.2369951, 51.0437778]],
+                {"bubblingMouseEvents": true, "color": "#00d18b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#00d18b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_276d15838562eba9f243a75def742f89);
+
+
+        var popup_af4d2214e9db8cdac4432da1852db3ee = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_37037f2b96e11b7190b973c223cb4265 = $(`<div id="html_37037f2b96e11b7190b973c223cb4265" style="width: 100.0%; height: 100.0%;"><b>Route 3 через ГИБДД</b><br>From: PEREEZD<br>To: PEREEZB<br>Stops: 27<br><div style='width:50px;height:20px;background-color:#00d18b;border:1px solid black;'></div></div>`)[0];
+                popup_af4d2214e9db8cdac4432da1852db3ee.setContent(html_37037f2b96e11b7190b973c223cb4265);
+
+
+
+        poly_line_42768206f8848a0fdcff69eebf6dfb8c.bindPopup(popup_af4d2214e9db8cdac4432da1852db3ee)
+        ;
+
+
+
+
+            poly_line_42768206f8848a0fdcff69eebf6dfb8c.bindTooltip(
+                `<div>
+                     Route 3 через ГИБДД: PEREEZD → PEREEZB
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_42768206f8848a0fdcff69eebf6dfb8c.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#00d18b",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_fb72e7388a83252c9cffe8d7e97fc2a1 = L.circleMarker(
+                [56.2372939, 51.0438105],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_276d15838562eba9f243a75def742f89);
+
+
+        var popup_bcb971f9159e7571d48e5b92cf8fec2d = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_d6b7f61128ae098ce76f838f74cbcb60 = $(`<div id="html_d6b7f61128ae098ce76f838f74cbcb60" style="width: 100.0%; height: 100.0%;"><b>Route 3 через ГИБДД Start</b><br>PEREEZD</div>`)[0];
+                popup_bcb971f9159e7571d48e5b92cf8fec2d.setContent(html_d6b7f61128ae098ce76f838f74cbcb60);
+
+
+
+        circle_marker_fb72e7388a83252c9cffe8d7e97fc2a1.bindPopup(popup_bcb971f9159e7571d48e5b92cf8fec2d)
+        ;
+
+
+
+
+            circle_marker_fb72e7388a83252c9cffe8d7e97fc2a1.bindTooltip(
+                `<div>
+                     Start: PEREEZD
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_d57d4019375e69758a1fcb952fd94d69 = L.circleMarker(
+                [56.2369951, 51.0437778],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_276d15838562eba9f243a75def742f89);
+
+
+        var popup_6d7735c5d128a916c0dc3fd189e13712 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_c85a72e2a46d5d94b92a2233d36bfb60 = $(`<div id="html_c85a72e2a46d5d94b92a2233d36bfb60" style="width: 100.0%; height: 100.0%;"><b>Route 3 через ГИБДД End</b><br>PEREEZB</div>`)[0];
+                popup_6d7735c5d128a916c0dc3fd189e13712.setContent(html_c85a72e2a46d5d94b92a2233d36bfb60);
+
+
+
+        circle_marker_d57d4019375e69758a1fcb952fd94d69.bindPopup(popup_6d7735c5d128a916c0dc3fd189e13712)
+        ;
+
+
+
+
+            circle_marker_d57d4019375e69758a1fcb952fd94d69.bindTooltip(
+                `<div>
+                     End: PEREEZB
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_276d15838562eba9f243a75def742f89.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_8e40e344ea862024794617d0ddc17640 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_aa44d4f235832bac54d204cbf8709616 = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684], [56.2256864, 51.0801692], [56.2280534, 51.0801347], [56.2311752, 51.0798339], [56.2326814, 51.07732], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#eaff00", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#eaff00", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_8e40e344ea862024794617d0ddc17640);
+
+
+        var popup_5fb70b88b7935ddf4da22b59d036b1e9 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_747ef7eb6c8ac5befccbf3369a7d4931 = $(`<div id="html_747ef7eb6c8ac5befccbf3369a7d4931" style="width: 100.0%; height: 100.0%;"><b>Route 4</b><br>From: VOKZAL2<br>To: VOKZAL1<br>Stops: 20<br><div style='width:50px;height:20px;background-color:#eaff00;border:1px solid black;'></div></div>`)[0];
+                popup_5fb70b88b7935ddf4da22b59d036b1e9.setContent(html_747ef7eb6c8ac5befccbf3369a7d4931);
+
+
+
+        poly_line_aa44d4f235832bac54d204cbf8709616.bindPopup(popup_5fb70b88b7935ddf4da22b59d036b1e9)
+        ;
+
+
+
+
+            poly_line_aa44d4f235832bac54d204cbf8709616.bindTooltip(
+                `<div>
+                     Route 4: VOKZAL2 → VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_aa44d4f235832bac54d204cbf8709616.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#eaff00",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_9f41443fe433f03940aade5a040acfdb = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_8e40e344ea862024794617d0ddc17640);
+
+
+        var popup_bb82f93b6b50811e2dbd9b33fcc70217 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_e5da5734a4c82738597f91ad12f64a9f = $(`<div id="html_e5da5734a4c82738597f91ad12f64a9f" style="width: 100.0%; height: 100.0%;"><b>Route 4 Start</b><br>VOKZAL2</div>`)[0];
+                popup_bb82f93b6b50811e2dbd9b33fcc70217.setContent(html_e5da5734a4c82738597f91ad12f64a9f);
+
+
+
+        circle_marker_9f41443fe433f03940aade5a040acfdb.bindPopup(popup_bb82f93b6b50811e2dbd9b33fcc70217)
+        ;
+
+
+
+
+            circle_marker_9f41443fe433f03940aade5a040acfdb.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_b775d4120801b8aaad5968cab4d44a32 = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_8e40e344ea862024794617d0ddc17640);
+
+
+        var popup_b160fdb552b3481ec0aad6c8110c1ed0 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_0c828b1a6d05467e6e41b491e927b26f = $(`<div id="html_0c828b1a6d05467e6e41b491e927b26f" style="width: 100.0%; height: 100.0%;"><b>Route 4 End</b><br>VOKZAL1</div>`)[0];
+                popup_b160fdb552b3481ec0aad6c8110c1ed0.setContent(html_0c828b1a6d05467e6e41b491e927b26f);
+
+
+
+        circle_marker_b775d4120801b8aaad5968cab4d44a32.bindPopup(popup_b160fdb552b3481ec0aad6c8110c1ed0)
+        ;
+
+
+
+
+            circle_marker_b775d4120801b8aaad5968cab4d44a32.bindTooltip(
+                `<div>
+                     End: VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_8e40e344ea862024794617d0ddc17640.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_4887853fc4940e3e157676099595d139 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_66a23c367babd33e65994a7ece32189c = L.polyline(
+                [[56.218171, 51.0805684], [56.2256864, 51.0801692], [56.2280534, 51.0801347], [56.2311752, 51.0798339], [56.2326814, 51.07732], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#ffcc00", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#ffcc00", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_4887853fc4940e3e157676099595d139);
+
+
+        var popup_e45c09db1073ba5fe54542aa60a0cb97 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_ed3467def86e78ec73cbfff81957b2e5 = $(`<div id="html_ed3467def86e78ec73cbfff81957b2e5" style="width: 100.0%; height: 100.0%;"><b>Route 4 от ЦРБ</b><br>From: VOKZAL2<br>To: VOKZAL1<br>Stops: 11<br><div style='width:50px;height:20px;background-color:#ffcc00;border:1px solid black;'></div></div>`)[0];
+                popup_e45c09db1073ba5fe54542aa60a0cb97.setContent(html_ed3467def86e78ec73cbfff81957b2e5);
+
+
+
+        poly_line_66a23c367babd33e65994a7ece32189c.bindPopup(popup_e45c09db1073ba5fe54542aa60a0cb97)
+        ;
+
+
+
+
+            poly_line_66a23c367babd33e65994a7ece32189c.bindTooltip(
+                `<div>
+                     Route 4 от ЦРБ: VOKZAL2 → VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_66a23c367babd33e65994a7ece32189c.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#ffcc00",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_a81e5987e49c961df194e322d734a853 = L.circleMarker(
+                [56.218171, 51.0805684],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_4887853fc4940e3e157676099595d139);
+
+
+        var popup_681bf1c495295bfbee19791890983d31 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_48369d30b576691c0423928aa5d8531c = $(`<div id="html_48369d30b576691c0423928aa5d8531c" style="width: 100.0%; height: 100.0%;"><b>Route 4 от ЦРБ Start</b><br>VOKZAL2</div>`)[0];
+                popup_681bf1c495295bfbee19791890983d31.setContent(html_48369d30b576691c0423928aa5d8531c);
+
+
+
+        circle_marker_a81e5987e49c961df194e322d734a853.bindPopup(popup_681bf1c495295bfbee19791890983d31)
+        ;
+
+
+
+
+            circle_marker_a81e5987e49c961df194e322d734a853.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_1ecdac89a371c1487fa00f40ac1f2dca = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_4887853fc4940e3e157676099595d139);
+
+
+        var popup_b6319c5e2137bb9fc4ebad2379cbbb37 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_1a02e8a790d8c8b300eee87ca29ca6cc = $(`<div id="html_1a02e8a790d8c8b300eee87ca29ca6cc" style="width: 100.0%; height: 100.0%;"><b>Route 4 от ЦРБ End</b><br>VOKZAL1</div>`)[0];
+                popup_b6319c5e2137bb9fc4ebad2379cbbb37.setContent(html_1a02e8a790d8c8b300eee87ca29ca6cc);
+
+
+
+        circle_marker_1ecdac89a371c1487fa00f40ac1f2dca.bindPopup(popup_b6319c5e2137bb9fc4ebad2379cbbb37)
+        ;
+
+
+
+
+            circle_marker_1ecdac89a371c1487fa00f40ac1f2dca.bindTooltip(
+                `<div>
+                     End: VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_4887853fc4940e3e157676099595d139.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_6386582889584e41cedb8a03fd8fe53b = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_bd8691380c46cfcf622fd83a8f312b44 = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.2179702, 51.0796452], [56.2168322, 51.0745651], [56.2179672, 51.0660061], [56.2198419, 51.0659981], [56.2211071, 51.0758253], [56.2246372, 51.0746683], [56.2284466, 51.0715784], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#8d3ff9", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#8d3ff9", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_6386582889584e41cedb8a03fd8fe53b);
+
+
+        var popup_488b0a2ef67c808f806defce5d74cd8b = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_295427609846fd2d74a7af30e03363e5 = $(`<div id="html_295427609846fd2d74a7af30e03363e5" style="width: 100.0%; height: 100.0%;"><b>Route 5</b><br>From: VOKZAL2<br>To: VOKZAL1<br>Stops: 22<br><div style='width:50px;height:20px;background-color:#8d3ff9;border:1px solid black;'></div></div>`)[0];
+                popup_488b0a2ef67c808f806defce5d74cd8b.setContent(html_295427609846fd2d74a7af30e03363e5);
+
+
+
+        poly_line_bd8691380c46cfcf622fd83a8f312b44.bindPopup(popup_488b0a2ef67c808f806defce5d74cd8b)
+        ;
+
+
+
+
+            poly_line_bd8691380c46cfcf622fd83a8f312b44.bindTooltip(
+                `<div>
+                     Route 5: VOKZAL2 → VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_bd8691380c46cfcf622fd83a8f312b44.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#8d3ff9",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_7db19ab4940d2f8953ce8b96bf06faae = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_6386582889584e41cedb8a03fd8fe53b);
+
+
+        var popup_25b75212b373a5dc2857c7adc29ea83c = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_da119b3c8d055a122e42bcef14384f08 = $(`<div id="html_da119b3c8d055a122e42bcef14384f08" style="width: 100.0%; height: 100.0%;"><b>Route 5 Start</b><br>VOKZAL2</div>`)[0];
+                popup_25b75212b373a5dc2857c7adc29ea83c.setContent(html_da119b3c8d055a122e42bcef14384f08);
+
+
+
+        circle_marker_7db19ab4940d2f8953ce8b96bf06faae.bindPopup(popup_25b75212b373a5dc2857c7adc29ea83c)
+        ;
+
+
+
+
+            circle_marker_7db19ab4940d2f8953ce8b96bf06faae.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_4400758c3aefe44aad68d5cfb167a90e = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_6386582889584e41cedb8a03fd8fe53b);
+
+
+        var popup_d163b394ef164e6773683e357d692cf9 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_564a5d17101450dc3a8c106c2944a75d = $(`<div id="html_564a5d17101450dc3a8c106c2944a75d" style="width: 100.0%; height: 100.0%;"><b>Route 5 End</b><br>VOKZAL1</div>`)[0];
+                popup_d163b394ef164e6773683e357d692cf9.setContent(html_564a5d17101450dc3a8c106c2944a75d);
+
+
+
+        circle_marker_4400758c3aefe44aad68d5cfb167a90e.bindPopup(popup_d163b394ef164e6773683e357d692cf9)
+        ;
+
+
+
+
+            circle_marker_4400758c3aefe44aad68d5cfb167a90e.bindTooltip(
+                `<div>
+                     End: VOKZAL1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_6386582889584e41cedb8a03fd8fe53b.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_506fb448cef13b950b096573bd0950b4 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_bb93456c61f34b8be3894ab6788544e4 = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684], [56.2248016, 51.07941], [56.2246372, 51.0746683], [56.2284466, 51.0715784], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#0400ff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0400ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_506fb448cef13b950b096573bd0950b4);
+
+
+        var popup_bd619504c2cc68739349249cf2b5d2bf = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_8c98ccac27c5332c7200dc66b4155459 = $(`<div id="html_8c98ccac27c5332c7200dc66b4155459" style="width: 100.0%; height: 100.0%;"><b>Route 6</b><br>From: VOKZAL2<br>To: TSRB01A<br>Stops: 19<br><div style='width:50px;height:20px;background-color:#0400ff;border:1px solid black;'></div></div>`)[0];
+                popup_bd619504c2cc68739349249cf2b5d2bf.setContent(html_8c98ccac27c5332c7200dc66b4155459);
+
+
+
+        poly_line_bb93456c61f34b8be3894ab6788544e4.bindPopup(popup_bd619504c2cc68739349249cf2b5d2bf)
+        ;
+
+
+
+
+            poly_line_bb93456c61f34b8be3894ab6788544e4.bindTooltip(
+                `<div>
+                     Route 6: VOKZAL2 → TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_bb93456c61f34b8be3894ab6788544e4.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#0400ff",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_0865fbce5a89b75e6736af47e7bf5d85 = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_506fb448cef13b950b096573bd0950b4);
+
+
+        var popup_c6b0cf5c8ed35347e1d32611ceba9c05 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_b8bdd6657016b9bd65b83bc948c1c236 = $(`<div id="html_b8bdd6657016b9bd65b83bc948c1c236" style="width: 100.0%; height: 100.0%;"><b>Route 6 Start</b><br>VOKZAL2</div>`)[0];
+                popup_c6b0cf5c8ed35347e1d32611ceba9c05.setContent(html_b8bdd6657016b9bd65b83bc948c1c236);
+
+
+
+        circle_marker_0865fbce5a89b75e6736af47e7bf5d85.bindPopup(popup_c6b0cf5c8ed35347e1d32611ceba9c05)
+        ;
+
+
+
+
+            circle_marker_0865fbce5a89b75e6736af47e7bf5d85.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_f29616e21f955e1f2da9eab4f73a6832 = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_506fb448cef13b950b096573bd0950b4);
+
+
+        var popup_4cb063d83b59eef0d8c680a39565ae1d = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_6f175e7fa9bbdcb1819aa0a700c07bf3 = $(`<div id="html_6f175e7fa9bbdcb1819aa0a700c07bf3" style="width: 100.0%; height: 100.0%;"><b>Route 6 End</b><br>TSRB01A</div>`)[0];
+                popup_4cb063d83b59eef0d8c680a39565ae1d.setContent(html_6f175e7fa9bbdcb1819aa0a700c07bf3);
+
+
+
+        circle_marker_f29616e21f955e1f2da9eab4f73a6832.bindPopup(popup_4cb063d83b59eef0d8c680a39565ae1d)
+        ;
+
+
+
+
+            circle_marker_f29616e21f955e1f2da9eab4f73a6832.bindTooltip(
+                `<div>
+                     End: TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_506fb448cef13b950b096573bd0950b4.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_f6c61c5f8ef0f4666699f654c4a7f315 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_dbd31f915df9acce430c161f3b5fe6ca = L.polyline(
+                [[56.228795, 51.033545], [56.2312752, 51.0380621], [56.2369951, 51.0437778], [56.2360596, 51.0499265], [56.2345467, 51.0612662], [56.2319183, 51.0677155], [56.2279079, 51.0716133], [56.2243034, 51.074603], [56.2201388, 51.0779188], [56.218171, 51.0805684]],
+                {"bubblingMouseEvents": true, "color": "#020084", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#020084", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_f6c61c5f8ef0f4666699f654c4a7f315);
+
+
+        var popup_3a1ebeb9527d5b71ec7d3d27e183e09f = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_36758020b48899be6de6761b9cde21fb = $(`<div id="html_36758020b48899be6de6761b9cde21fb" style="width: 100.0%; height: 100.0%;"><b>Route 6 до ЦРБ</b><br>From: VOKZAL2<br>To: TSRB01A<br>Stops: 10<br><div style='width:50px;height:20px;background-color:#020084;border:1px solid black;'></div></div>`)[0];
+                popup_3a1ebeb9527d5b71ec7d3d27e183e09f.setContent(html_36758020b48899be6de6761b9cde21fb);
+
+
+
+        poly_line_dbd31f915df9acce430c161f3b5fe6ca.bindPopup(popup_3a1ebeb9527d5b71ec7d3d27e183e09f)
+        ;
+
+
+
+
+            poly_line_dbd31f915df9acce430c161f3b5fe6ca.bindTooltip(
+                `<div>
+                     Route 6 до ЦРБ: VOKZAL2 → TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_dbd31f915df9acce430c161f3b5fe6ca.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#020084",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_9ae76b94ebfe81dfd5073f5bff20503a = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_f6c61c5f8ef0f4666699f654c4a7f315);
+
+
+        var popup_509e323236117145f29404540e16a24e = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_573722103644c268150389bfaaa54c37 = $(`<div id="html_573722103644c268150389bfaaa54c37" style="width: 100.0%; height: 100.0%;"><b>Route 6 до ЦРБ Start</b><br>VOKZAL2</div>`)[0];
+                popup_509e323236117145f29404540e16a24e.setContent(html_573722103644c268150389bfaaa54c37);
+
+
+
+        circle_marker_9ae76b94ebfe81dfd5073f5bff20503a.bindPopup(popup_509e323236117145f29404540e16a24e)
+        ;
+
+
+
+
+            circle_marker_9ae76b94ebfe81dfd5073f5bff20503a.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_60924a9c7747c0053192b9c3a13c28e2 = L.circleMarker(
+                [56.218171, 51.0805684],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_f6c61c5f8ef0f4666699f654c4a7f315);
+
+
+        var popup_4437832f8a77042ed575008a8df6bd9b = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_677ba484d859c0d4aa8dbdbaba02fead = $(`<div id="html_677ba484d859c0d4aa8dbdbaba02fead" style="width: 100.0%; height: 100.0%;"><b>Route 6 до ЦРБ End</b><br>TSRB01A</div>`)[0];
+                popup_4437832f8a77042ed575008a8df6bd9b.setContent(html_677ba484d859c0d4aa8dbdbaba02fead);
+
+
+
+        circle_marker_60924a9c7747c0053192b9c3a13c28e2.bindPopup(popup_4437832f8a77042ed575008a8df6bd9b)
+        ;
+
+
+
+
+            circle_marker_60924a9c7747c0053192b9c3a13c28e2.bindTooltip(
+                `<div>
+                     End: TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_f6c61c5f8ef0f4666699f654c4a7f315.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_c7ff49c531c7351860e39cad5c3f6b45 = L.featureGroup(
+                {
+}
+            );
+
+
+            var poly_line_522e63cd8aa147ab31aa7402b248e225 = L.polyline(
+                [[56.218171, 51.0805684], [56.2248016, 51.07941], [56.2246372, 51.0746683], [56.2284466, 51.0715784], [56.2314297, 51.0691929], [56.2344937, 51.0618056], [56.2359177, 51.0512745], [56.2372939, 51.0438105], [56.2314639, 51.0379769], [56.2291396, 51.0339024]],
+                {"bubblingMouseEvents": true, "color": "#6562f8", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#6562f8", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 6}
+            ).addTo(feature_group_c7ff49c531c7351860e39cad5c3f6b45);
+
+
+        var popup_0c3db1059a32f9f93bf3321f1d4817d7 = L.popup({
+  "maxWidth": 250,
+});
+
+
+
+                var html_07f15c173d2658dd8fc86604348068e7 = $(`<div id="html_07f15c173d2658dd8fc86604348068e7" style="width: 100.0%; height: 100.0%;"><b>Route 6 от ЦРБ</b><br>From: VOKZAL2<br>To: TSRB01A<br>Stops: 10<br><div style='width:50px;height:20px;background-color:#6562f8;border:1px solid black;'></div></div>`)[0];
+                popup_0c3db1059a32f9f93bf3321f1d4817d7.setContent(html_07f15c173d2658dd8fc86604348068e7);
+
+
+
+        poly_line_522e63cd8aa147ab31aa7402b248e225.bindPopup(popup_0c3db1059a32f9f93bf3321f1d4817d7)
+        ;
+
+
+
+
+            poly_line_522e63cd8aa147ab31aa7402b248e225.bindTooltip(
+                `<div>
+                     Route 6 от ЦРБ: VOKZAL2 → TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            poly_line_522e63cd8aa147ab31aa7402b248e225.setText(
+                "    \u25ba    ",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 8,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#6562f8",
+  "font-size": "18",
+},
+}
+            );
+
+
+            var circle_marker_8332a3994f181c8a0e6f5cc358f5c699 = L.circleMarker(
+                [56.218171, 51.0805684],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightgreen", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_c7ff49c531c7351860e39cad5c3f6b45);
+
+
+        var popup_1a3dd454a327c0e9825bcdb3e4179286 = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_c28f71d82f6570fa727e5e7c6127fcc6 = $(`<div id="html_c28f71d82f6570fa727e5e7c6127fcc6" style="width: 100.0%; height: 100.0%;"><b>Route 6 от ЦРБ Start</b><br>VOKZAL2</div>`)[0];
+                popup_1a3dd454a327c0e9825bcdb3e4179286.setContent(html_c28f71d82f6570fa727e5e7c6127fcc6);
+
+
+
+        circle_marker_8332a3994f181c8a0e6f5cc358f5c699.bindPopup(popup_1a3dd454a327c0e9825bcdb3e4179286)
+        ;
+
+
+
+
+            circle_marker_8332a3994f181c8a0e6f5cc358f5c699.bindTooltip(
+                `<div>
+                     Start: VOKZAL2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_72ece26a0c5e072d542040718b83376e = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightcoral", "fillOpacity": 1.0, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(feature_group_c7ff49c531c7351860e39cad5c3f6b45);
+
+
+        var popup_e5d7c1e41e865bf08b12dc6f9d0a5c9a = L.popup({
+  "maxWidth": "100%",
+});
+
+
+
+                var html_305bdd4afa8fe42bf6607e5859ccbdbd = $(`<div id="html_305bdd4afa8fe42bf6607e5859ccbdbd" style="width: 100.0%; height: 100.0%;"><b>Route 6 от ЦРБ End</b><br>TSRB01A</div>`)[0];
+                popup_e5d7c1e41e865bf08b12dc6f9d0a5c9a.setContent(html_305bdd4afa8fe42bf6607e5859ccbdbd);
+
+
+
+        circle_marker_72ece26a0c5e072d542040718b83376e.bindPopup(popup_e5d7c1e41e865bf08b12dc6f9d0a5c9a)
+        ;
+
+
+
+
+            circle_marker_72ece26a0c5e072d542040718b83376e.bindTooltip(
+                `<div>
+                     End: TSRB01A
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_c7ff49c531c7351860e39cad5c3f6b45.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var feature_group_a9e11815feb022e826172f4ee5aafc5b = L.featureGroup(
+                {
+}
+            );
+
+
+            var circle_marker_b3bb627911c33d541a5cc653630c287a = L.circleMarker(
+                [56.218171, 51.0805684],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_3a3914ddcaaf1ced89110093cbf841a1 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_fe1590d9631cad97f5f611890a3ae8fa = $(`<div id="html_fe1590d9631cad97f5f611890a3ae8fa" style="width: 100.0%; height: 100.0%;"><b>Центральная районная больница</b><br><small>Code: TSRB01A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_3a3914ddcaaf1ced89110093cbf841a1.setContent(html_fe1590d9631cad97f5f611890a3ae8fa);
+
+
+
+        circle_marker_b3bb627911c33d541a5cc653630c287a.bindPopup(popup_3a3914ddcaaf1ced89110093cbf841a1)
+        ;
+
+
+
+
+            circle_marker_b3bb627911c33d541a5cc653630c287a.bindTooltip(
+                `<div>
+                     Центральная районная больница (2, 3, 3 до ЦРБ, 3 от ЦРБ, 3 через ГИБДД, 4, 4 от ЦРБ, 6, 6 до ЦРБ, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_58cb90b1322a9a88fa6f4ede6c56633d = L.circleMarker(
+                [56.2290781, 51.0634702],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_d7a4784754b45ffa470a423933348976 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_ea97a0d34b165144c399f21b83850b68 = $(`<div id="html_ea97a0d34b165144c399f21b83850b68" style="width: 100.0%; height: 100.0%;"><b>Стадион</b><br><small>Code: STADIONA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_d7a4784754b45ffa470a423933348976.setContent(html_ea97a0d34b165144c399f21b83850b68);
+
+
+
+        circle_marker_58cb90b1322a9a88fa6f4ede6c56633d.bindPopup(popup_d7a4784754b45ffa470a423933348976)
+        ;
+
+
+
+
+            circle_marker_58cb90b1322a9a88fa6f4ede6c56633d.bindTooltip(
+                `<div>
+                     Стадион (3, 3 от ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_975489822c894199211ccce1e2e3094b = L.circleMarker(
+                [56.2287702, 51.0629659],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_c96331687f5a1705f9b5f3aaaa07db5a = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_e9a06047cd047fe4c6c36852ebb7b1a6 = $(`<div id="html_e9a06047cd047fe4c6c36852ebb7b1a6" style="width: 100.0%; height: 100.0%;"><b>Стадион</b><br><small>Code: STADIONB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_c96331687f5a1705f9b5f3aaaa07db5a.setContent(html_e9a06047cd047fe4c6c36852ebb7b1a6);
+
+
+
+        circle_marker_975489822c894199211ccce1e2e3094b.bindPopup(popup_c96331687f5a1705f9b5f3aaaa07db5a)
+        ;
+
+
+
+
+            circle_marker_975489822c894199211ccce1e2e3094b.bindTooltip(
+                `<div>
+                     Стадион (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_0650074e5bca16646df6f1638c1389d6 = L.circleMarker(
+                [56.2268348, 51.0547236],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_59dfbf103d8e1192deb77e2514225800 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_49d53f368843346d8c6af1509878113d = $(`<div id="html_49d53f368843346d8c6af1509878113d" style="width: 100.0%; height: 100.0%;"><b>Женский монастырь</b><br><small>Code: ZHENMONA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_59dfbf103d8e1192deb77e2514225800.setContent(html_49d53f368843346d8c6af1509878113d);
+
+
+
+        circle_marker_0650074e5bca16646df6f1638c1389d6.bindPopup(popup_59dfbf103d8e1192deb77e2514225800)
+        ;
+
+
+
+
+            circle_marker_0650074e5bca16646df6f1638c1389d6.bindTooltip(
+                `<div>
+                     Женский монастырь (3, 3 от ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_4be651182821742c0d7645d958ba9f28 = L.circleMarker(
+                [56.2269663, 51.0557841],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_226e178d3330b30839b89ec4d85173f3 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_c36390d421d27db5c29bf570fa13535c = $(`<div id="html_c36390d421d27db5c29bf570fa13535c" style="width: 100.0%; height: 100.0%;"><b>Женский монастырь</b><br><small>Code: ZHENMONB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_226e178d3330b30839b89ec4d85173f3.setContent(html_c36390d421d27db5c29bf570fa13535c);
+
+
+
+        circle_marker_4be651182821742c0d7645d958ba9f28.bindPopup(popup_226e178d3330b30839b89ec4d85173f3)
+        ;
+
+
+
+
+            circle_marker_4be651182821742c0d7645d958ba9f28.bindTooltip(
+                `<div>
+                     Женский монастырь (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_120be6306c085e69fdf287c147bf5783 = L.circleMarker(
+                [56.2300003, 51.0677921],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_3dcb7fc08edb724bdc898491379dd8e4 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_6375f8fed3d6277a66158d301c3784fe = $(`<div id="html_6375f8fed3d6277a66158d301c3784fe" style="width: 100.0%; height: 100.0%;"><b>Завод</b><br><small>Code: ZAVOD1A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_3dcb7fc08edb724bdc898491379dd8e4.setContent(html_6375f8fed3d6277a66158d301c3784fe);
+
+
+
+        circle_marker_120be6306c085e69fdf287c147bf5783.bindPopup(popup_3dcb7fc08edb724bdc898491379dd8e4)
+        ;
+
+
+
+
+            circle_marker_120be6306c085e69fdf287c147bf5783.bindTooltip(
+                `<div>
+                     Завод (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_36d7425bc326ee38186aca3fd5ca104b = L.circleMarker(
+                [56.2372939, 51.0438105],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_ef026b670f571a3eccf321067c991c2f = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_d1f5e368c08491cbdafd5ca765e92441 = $(`<div id="html_d1f5e368c08491cbdafd5ca765e92441" style="width: 100.0%; height: 100.0%;"><b>Переезд</b><br><small>Code: PEREEZD</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_ef026b670f571a3eccf321067c991c2f.setContent(html_d1f5e368c08491cbdafd5ca765e92441);
+
+
+
+        circle_marker_36d7425bc326ee38186aca3fd5ca104b.bindPopup(popup_ef026b670f571a3eccf321067c991c2f)
+        ;
+
+
+
+
+            circle_marker_36d7425bc326ee38186aca3fd5ca104b.bindTooltip(
+                `<div>
+                     Переезд (1, 2, 3, 3 до ЦРБ, 3 через ГИБДД, 4, 4 от ЦРБ, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_4c05d69be729426bc0103b1b88318ca6 = L.circleMarker(
+                [56.2359177, 51.0512745],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_5fa0f68c88c58c3699cb73354b71622d = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_d15f4101d75d8e38f04998efa67f988d = $(`<div id="html_d15f4101d75d8e38f04998efa67f988d" style="width: 100.0%; height: 100.0%;"><b>Тойменка</b><br><small>Code: TOYMENA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_5fa0f68c88c58c3699cb73354b71622d.setContent(html_d15f4101d75d8e38f04998efa67f988d);
+
+
+
+        circle_marker_4c05d69be729426bc0103b1b88318ca6.bindPopup(popup_5fa0f68c88c58c3699cb73354b71622d)
+        ;
+
+
+
+
+            circle_marker_4c05d69be729426bc0103b1b88318ca6.bindTooltip(
+                `<div>
+                     Тойменка (1, 2, 4, 4 от ЦРБ, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_ebae50b36a95760d4969d306fad4aa4a = L.circleMarker(
+                [56.2344937, 51.0618056],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_ec46558cae4531e1a994db49e021442a = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_92cb62cc7f8f69f19082e7906a3705e3 = $(`<div id="html_92cb62cc7f8f69f19082e7906a3705e3" style="width: 100.0%; height: 100.0%;"><b>Налоговая</b><br><small>Code: NALOG1A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_ec46558cae4531e1a994db49e021442a.setContent(html_92cb62cc7f8f69f19082e7906a3705e3);
+
+
+
+        circle_marker_ebae50b36a95760d4969d306fad4aa4a.bindPopup(popup_ec46558cae4531e1a994db49e021442a)
+        ;
+
+
+
+
+            circle_marker_ebae50b36a95760d4969d306fad4aa4a.bindTooltip(
+                `<div>
+                     Налоговая (1, 2, 4, 4 от ЦРБ, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_08d45c658835588e54b01d1ca284ac4b = L.circleMarker(
+                [56.2314297, 51.0691929],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_d95516707e736d89a970a2fc30715d5f = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_d547ed235af4312657f4b255c99786ab = $(`<div id="html_d547ed235af4312657f4b255c99786ab" style="width: 100.0%; height: 100.0%;"><b>Завод</b><br><small>Code: ZAVOD1B</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_d95516707e736d89a970a2fc30715d5f.setContent(html_d547ed235af4312657f4b255c99786ab);
+
+
+
+        circle_marker_08d45c658835588e54b01d1ca284ac4b.bindPopup(popup_d95516707e736d89a970a2fc30715d5f)
+        ;
+
+
+
+
+            circle_marker_08d45c658835588e54b01d1ca284ac4b.bindTooltip(
+                `<div>
+                     Завод (1, 2, 4, 4 от ЦРБ, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_efe566a78abe6c8af01205923dd08091 = L.circleMarker(
+                [56.2246372, 51.0746683],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_0ab26f8f799b17bc1d5a24d2da959456 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_7052fb2d75e9d07a5532a09a33bd759f = $(`<div id="html_7052fb2d75e9d07a5532a09a33bd759f" style="width: 100.0%; height: 100.0%;"><b>Техникум</b><br><small>Code: TEHNIKM</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_0ab26f8f799b17bc1d5a24d2da959456.setContent(html_7052fb2d75e9d07a5532a09a33bd759f);
+
+
+
+        circle_marker_efe566a78abe6c8af01205923dd08091.bindPopup(popup_0ab26f8f799b17bc1d5a24d2da959456)
+        ;
+
+
+
+
+            circle_marker_efe566a78abe6c8af01205923dd08091.bindTooltip(
+                `<div>
+                     Техникум (1, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_ce83816b8e8a3b38ece319e77362b172 = L.circleMarker(
+                [56.2291396, 51.0339024],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_33848a4b88b508b369f29eabd8b86775 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_a8db041c5a4552b4664a9fc7c0dd21d3 = $(`<div id="html_a8db041c5a4552b4664a9fc7c0dd21d3" style="width: 100.0%; height: 100.0%;"><b>Вокзал</b><br><small>Code: VOKZAL1</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_33848a4b88b508b369f29eabd8b86775.setContent(html_a8db041c5a4552b4664a9fc7c0dd21d3);
+
+
+
+        circle_marker_ce83816b8e8a3b38ece319e77362b172.bindPopup(popup_33848a4b88b508b369f29eabd8b86775)
+        ;
+
+
+
+
+            circle_marker_ce83816b8e8a3b38ece319e77362b172.bindTooltip(
+                `<div>
+                     Вокзал (1, 2, 3, 3 от ЦРБ, 3 через ГИБДД, 4, 4 от ЦРБ, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_a82579de432df918def496f22e579e98 = L.circleMarker(
+                [56.2314639, 51.0379769],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_07dcd37921de62743a29f1dcc2b6b740 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_370a43f68f87bd58b238f598d989e207 = $(`<div id="html_370a43f68f87bd58b238f598d989e207" style="width: 100.0%; height: 100.0%;"><b>Школа №5</b><br><small>Code: SHKOLA5A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_07dcd37921de62743a29f1dcc2b6b740.setContent(html_370a43f68f87bd58b238f598d989e207);
+
+
+
+        circle_marker_a82579de432df918def496f22e579e98.bindPopup(popup_07dcd37921de62743a29f1dcc2b6b740)
+        ;
+
+
+
+
+            circle_marker_a82579de432df918def496f22e579e98.bindTooltip(
+                `<div>
+                     Школа №5 (1, 2, 3, 3 до ЦРБ, 3 через ГИБДД, 4, 4 от ЦРБ, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_77e130142103c6238be6cf4ba67cbcf8 = L.circleMarker(
+                [56.2194798, 51.0850739],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_738b6791f6f7df20c069777aa840ca69 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_8f44d9b2e9da1944a1b613bd8bc7409a = $(`<div id="html_8f44d9b2e9da1944a1b613bd8bc7409a" style="width: 100.0%; height: 100.0%;"><b>Рембыттехника</b><br><small>Code: REMBYTA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span></div>`)[0];
+                popup_738b6791f6f7df20c069777aa840ca69.setContent(html_8f44d9b2e9da1944a1b613bd8bc7409a);
+
+
+
+        circle_marker_77e130142103c6238be6cf4ba67cbcf8.bindPopup(popup_738b6791f6f7df20c069777aa840ca69)
+        ;
+
+
+
+
+            circle_marker_77e130142103c6238be6cf4ba67cbcf8.bindTooltip(
+                `<div>
+                     Рембыттехника (2)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_814a021e1647b2dae1f521c2d16ceb0e = L.circleMarker(
+                [56.2256921, 51.0875601],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_cb7db53adf8a74646e4bdd53eb3330d7 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_6c8ef7790c7d942a6912d0eddc79677c = $(`<div id="html_6c8ef7790c7d942a6912d0eddc79677c" style="width: 100.0%; height: 100.0%;"><b>Музей</b><br><small>Code: MUZEY1A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_cb7db53adf8a74646e4bdd53eb3330d7.setContent(html_6c8ef7790c7d942a6912d0eddc79677c);
+
+
+
+        circle_marker_814a021e1647b2dae1f521c2d16ceb0e.bindPopup(popup_cb7db53adf8a74646e4bdd53eb3330d7)
+        ;
+
+
+
+
+            circle_marker_814a021e1647b2dae1f521c2d16ceb0e.bindTooltip(
+                `<div>
+                     Музей (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_fe48e46eb632020349bc9c1799a26725 = L.circleMarker(
+                [56.2241931, 51.0846136],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_7ef4061d5a3129eed0d874946c1623b5 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_0d36dda2ec89c864c0211f5d02075f7f = $(`<div id="html_0d36dda2ec89c864c0211f5d02075f7f" style="width: 100.0%; height: 100.0%;"><b>Улица Пароходная</b><br><small>Code: ULPAROH</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_7ef4061d5a3129eed0d874946c1623b5.setContent(html_0d36dda2ec89c864c0211f5d02075f7f);
+
+
+
+        circle_marker_fe48e46eb632020349bc9c1799a26725.bindPopup(popup_7ef4061d5a3129eed0d874946c1623b5)
+        ;
+
+
+
+
+            circle_marker_fe48e46eb632020349bc9c1799a26725.bindTooltip(
+                `<div>
+                     Улица Пароходная (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_97db9ded1f1cb018bbd33886a0de9865 = L.circleMarker(
+                [56.2191342, 51.0363154],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_a49117549014aeb1dec54bb53de275b9 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_648f3901eddf3b924f0018f36a8fc66a = $(`<div id="html_648f3901eddf3b924f0018f36a8fc66a" style="width: 100.0%; height: 100.0%;"><b>Сельхозтехника</b><br><small>Code: SELHTEH</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_a49117549014aeb1dec54bb53de275b9.setContent(html_648f3901eddf3b924f0018f36a8fc66a);
+
+
+
+        circle_marker_97db9ded1f1cb018bbd33886a0de9865.bindPopup(popup_a49117549014aeb1dec54bb53de275b9)
+        ;
+
+
+
+
+            circle_marker_97db9ded1f1cb018bbd33886a0de9865.bindTooltip(
+                `<div>
+                     Сельхозтехника (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_598bdb247c85d5392b1b7be6bfe2b7f4 = L.circleMarker(
+                [56.2214706, 51.043072],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_cd7b2028f792c06c2a440c9a01891bf6 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_d1b667f5830ba45f05cfef478047f63f = $(`<div id="html_d1b667f5830ba45f05cfef478047f63f" style="width: 100.0%; height: 100.0%;"><b>По требованию</b><br><small>Code: POTREBA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_cd7b2028f792c06c2a440c9a01891bf6.setContent(html_d1b667f5830ba45f05cfef478047f63f);
+
+
+
+        circle_marker_598bdb247c85d5392b1b7be6bfe2b7f4.bindPopup(popup_cd7b2028f792c06c2a440c9a01891bf6)
+        ;
+
+
+
+
+            circle_marker_598bdb247c85d5392b1b7be6bfe2b7f4.bindTooltip(
+                `<div>
+                     По требованию (3, 3 от ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_20cc8c518be0d9dba129329dd91d6d53 = L.circleMarker(
+                [56.2209321, 51.0418894],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_9dd3ef666efe01ee586ac5169c59c4da = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_c9bdeea8a09f9ef5e70baa4fb04a7b5e = $(`<div id="html_c9bdeea8a09f9ef5e70baa4fb04a7b5e" style="width: 100.0%; height: 100.0%;"><b>По требованию</b><br><small>Code: POTREBB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_9dd3ef666efe01ee586ac5169c59c4da.setContent(html_c9bdeea8a09f9ef5e70baa4fb04a7b5e);
+
+
+
+        circle_marker_20cc8c518be0d9dba129329dd91d6d53.bindPopup(popup_9dd3ef666efe01ee586ac5169c59c4da)
+        ;
+
+
+
+
+            circle_marker_20cc8c518be0d9dba129329dd91d6d53.bindTooltip(
+                `<div>
+                     По требованию (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_a5f7c2a7d960f202d4e87bd620f7f731 = L.circleMarker(
+                [56.2235645, 51.0490564],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_223bbc07a4f0a2fbdf2824e002f13613 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_94671eafaf0b7f02a663ccd548d67683 = $(`<div id="html_94671eafaf0b7f02a663ccd548d67683" style="width: 100.0%; height: 100.0%;"><b>Почта №5</b><br><small>Code: POCHTA5</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_223bbc07a4f0a2fbdf2824e002f13613.setContent(html_94671eafaf0b7f02a663ccd548d67683);
+
+
+
+        circle_marker_a5f7c2a7d960f202d4e87bd620f7f731.bindPopup(popup_223bbc07a4f0a2fbdf2824e002f13613)
+        ;
+
+
+
+
+            circle_marker_a5f7c2a7d960f202d4e87bd620f7f731.bindTooltip(
+                `<div>
+                     Почта №5 (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_c165f350ca9ff50ce59ae5b069ac35d0 = L.circleMarker(
+                [56.2321811, 51.0761039],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_24ebcb03866016d58ec2bd3105ec4a66 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_796ca1714f59121ab496c2e8acb6ac05 = $(`<div id="html_796ca1714f59121ab496c2e8acb6ac05" style="width: 100.0%; height: 100.0%;"><b>Школа искусств</b><br><small>Code: SHKISKUA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_24ebcb03866016d58ec2bd3105ec4a66.setContent(html_796ca1714f59121ab496c2e8acb6ac05);
+
+
+
+        circle_marker_c165f350ca9ff50ce59ae5b069ac35d0.bindPopup(popup_24ebcb03866016d58ec2bd3105ec4a66)
+        ;
+
+
+
+
+            circle_marker_c165f350ca9ff50ce59ae5b069ac35d0.bindTooltip(
+                `<div>
+                     Школа искусств (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_0e621726bb7766879afde8f14efeeedf = L.circleMarker(
+                [56.2326814, 51.07732],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_03cf9799c5d53727fd0cfe19eb80361e = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_a5be4e05b39b618ac322109130ba012b = $(`<div id="html_a5be4e05b39b618ac322109130ba012b" style="width: 100.0%; height: 100.0%;"><b>Школа искусств</b><br><small>Code: SHKISKUB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span></div>`)[0];
+                popup_03cf9799c5d53727fd0cfe19eb80361e.setContent(html_a5be4e05b39b618ac322109130ba012b);
+
+
+
+        circle_marker_0e621726bb7766879afde8f14efeeedf.bindPopup(popup_03cf9799c5d53727fd0cfe19eb80361e)
+        ;
+
+
+
+
+            circle_marker_0e621726bb7766879afde8f14efeeedf.bindTooltip(
+                `<div>
+                     Школа искусств (2, 3 через ГИБДД, 4, 4 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_83ba56ee86978fa978cac57a04f3eef3 = L.circleMarker(
+                [56.2328613, 51.0854599],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_937dc6df793077e8807d920ccdc8f20b = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_2e0a2a80cab2ac5620148cee3f958105 = $(`<div id="html_2e0a2a80cab2ac5620148cee3f958105" style="width: 100.0%; height: 100.0%;"><b>Набережная</b><br><small>Code: NABERA1</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_937dc6df793077e8807d920ccdc8f20b.setContent(html_2e0a2a80cab2ac5620148cee3f958105);
+
+
+
+        circle_marker_83ba56ee86978fa978cac57a04f3eef3.bindPopup(popup_937dc6df793077e8807d920ccdc8f20b)
+        ;
+
+
+
+
+            circle_marker_83ba56ee86978fa978cac57a04f3eef3.bindTooltip(
+                `<div>
+                     Набережная (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_f9f6f902f6a3ac9c739189ff9b0df64e = L.circleMarker(
+                [56.2329884, 51.0870464],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_10c2c339af2d9572ca1c859792c171df = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_beeb4103de5b9b30cafcb8a8c7719ee8 = $(`<div id="html_beeb4103de5b9b30cafcb8a8c7719ee8" style="width: 100.0%; height: 100.0%;"><b>Набережная</b><br><small>Code: NABERA2</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span></div>`)[0];
+                popup_10c2c339af2d9572ca1c859792c171df.setContent(html_beeb4103de5b9b30cafcb8a8c7719ee8);
+
+
+
+        circle_marker_f9f6f902f6a3ac9c739189ff9b0df64e.bindPopup(popup_10c2c339af2d9572ca1c859792c171df)
+        ;
+
+
+
+
+            circle_marker_f9f6f902f6a3ac9c739189ff9b0df64e.bindTooltip(
+                `<div>
+                     Набережная (2)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_f58f9d111e773439b4beae7bc3d8162e = L.circleMarker(
+                [56.2319183, 51.0677155],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_99d92ddd32871fb2ef8d72d4016532dd = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_288897b997863c3ee633a81bd601143e = $(`<div id="html_288897b997863c3ee633a81bd601143e" style="width: 100.0%; height: 100.0%;"><b>Завод</b><br><small>Code: ZAVOD1C</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_99d92ddd32871fb2ef8d72d4016532dd.setContent(html_288897b997863c3ee633a81bd601143e);
+
+
+
+        circle_marker_f58f9d111e773439b4beae7bc3d8162e.bindPopup(popup_99d92ddd32871fb2ef8d72d4016532dd)
+        ;
+
+
+
+
+            circle_marker_f58f9d111e773439b4beae7bc3d8162e.bindTooltip(
+                `<div>
+                     Завод (1, 1 до ЦРБ, 2, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_1465e508bfb4fffe5d64d94647fa343d = L.circleMarker(
+                [56.2345467, 51.0612662],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_b20b0fcd122cc60073687e4bb57539ef = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_af22d601bb81bdf1bd6a4d85c99f193e = $(`<div id="html_af22d601bb81bdf1bd6a4d85c99f193e" style="width: 100.0%; height: 100.0%;"><b>Налоговая</b><br><small>Code: NALOG1B</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_b20b0fcd122cc60073687e4bb57539ef.setContent(html_af22d601bb81bdf1bd6a4d85c99f193e);
+
+
+
+        circle_marker_1465e508bfb4fffe5d64d94647fa343d.bindPopup(popup_b20b0fcd122cc60073687e4bb57539ef)
+        ;
+
+
+
+
+            circle_marker_1465e508bfb4fffe5d64d94647fa343d.bindTooltip(
+                `<div>
+                     Налоговая (1, 1 до ЦРБ, 2, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_97334253cd758b552ec3d0c254b81731 = L.circleMarker(
+                [56.2360596, 51.0499265],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_d995f2113d6a867776299354d3c50cc3 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_b3388ad414a76a0c6d0b53098a3440b3 = $(`<div id="html_b3388ad414a76a0c6d0b53098a3440b3" style="width: 100.0%; height: 100.0%;"><b>Тойменка</b><br><small>Code: TOYMENB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_d995f2113d6a867776299354d3c50cc3.setContent(html_b3388ad414a76a0c6d0b53098a3440b3);
+
+
+
+        circle_marker_97334253cd758b552ec3d0c254b81731.bindPopup(popup_d995f2113d6a867776299354d3c50cc3)
+        ;
+
+
+
+
+            circle_marker_97334253cd758b552ec3d0c254b81731.bindTooltip(
+                `<div>
+                     Тойменка (1, 1 до ЦРБ, 2, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_4f1ae7e7a1f528001478bee599d327f4 = L.circleMarker(
+                [56.2369951, 51.0437778],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_3d68b08fcb926a24dca40b47fcbbc086 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_e05f57a4f5632c3516cc313fc75265bb = $(`<div id="html_e05f57a4f5632c3516cc313fc75265bb" style="width: 100.0%; height: 100.0%;"><b>Переезд</b><br><small>Code: PEREEZB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_3d68b08fcb926a24dca40b47fcbbc086.setContent(html_e05f57a4f5632c3516cc313fc75265bb);
+
+
+
+        circle_marker_4f1ae7e7a1f528001478bee599d327f4.bindPopup(popup_3d68b08fcb926a24dca40b47fcbbc086)
+        ;
+
+
+
+
+            circle_marker_4f1ae7e7a1f528001478bee599d327f4.bindTooltip(
+                `<div>
+                     Переезд (1, 1 до ЦРБ, 2, 3, 3 от ЦРБ, 3 через ГИБДД, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_82a6baa7a0c11df62b97ce752513c5b1 = L.circleMarker(
+                [56.2312752, 51.0380621],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_fd4cba7650bbb7ffad5ddd7b8ed6ff39 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_6e899da70d023fc2efb206c73df3fd17 = $(`<div id="html_6e899da70d023fc2efb206c73df3fd17" style="width: 100.0%; height: 100.0%;"><b>Школа №5</b><br><small>Code: SHKOLA5B</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_fd4cba7650bbb7ffad5ddd7b8ed6ff39.setContent(html_6e899da70d023fc2efb206c73df3fd17);
+
+
+
+        circle_marker_82a6baa7a0c11df62b97ce752513c5b1.bindPopup(popup_fd4cba7650bbb7ffad5ddd7b8ed6ff39)
+        ;
+
+
+
+
+            circle_marker_82a6baa7a0c11df62b97ce752513c5b1.bindTooltip(
+                `<div>
+                     Школа №5 (1, 1 до ЦРБ, 2, 3, 3 от ЦРБ, 3 через ГИБДД, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_ae845a9151211fc54c9ae5ff9c1174e0 = L.circleMarker(
+                [56.2220341, 51.0309187],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_f303a5b824611475ea8157bd09673ae8 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_f7e39746060a89aec6e639f91a14c3e7 = $(`<div id="html_f7e39746060a89aec6e639f91a14c3e7" style="width: 100.0%; height: 100.0%;"><b>Мясокомбинат</b><br><small>Code: MYASOKA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_f303a5b824611475ea8157bd09673ae8.setContent(html_f7e39746060a89aec6e639f91a14c3e7);
+
+
+
+        circle_marker_ae845a9151211fc54c9ae5ff9c1174e0.bindPopup(popup_f303a5b824611475ea8157bd09673ae8)
+        ;
+
+
+
+
+            circle_marker_ae845a9151211fc54c9ae5ff9c1174e0.bindTooltip(
+                `<div>
+                     Мясокомбинат (3, 3 до ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_f26ed658c887080c4f21f75b3b9845e0 = L.circleMarker(
+                [56.2191452, 51.0354658],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_89d219f156080ba3ceafca045d01c410 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_513130131d52570ba04fac990d596803 = $(`<div id="html_513130131d52570ba04fac990d596803" style="width: 100.0%; height: 100.0%;"><b>Сельхозтехника</b><br><small>Code: SELHTEB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_89d219f156080ba3ceafca045d01c410.setContent(html_513130131d52570ba04fac990d596803);
+
+
+
+        circle_marker_f26ed658c887080c4f21f75b3b9845e0.bindPopup(popup_89d219f156080ba3ceafca045d01c410)
+        ;
+
+
+
+
+            circle_marker_f26ed658c887080c4f21f75b3b9845e0.bindTooltip(
+                `<div>
+                     Сельхозтехника (3, 3 от ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_867a5313114ebca03885d2640dc9bb7f = L.circleMarker(
+                [56.2279079, 51.0716133],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_25de1c446d2ffdfdeb166e65e36c254d = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_e95494f3d04a9f7e1d21351a39d73525 = $(`<div id="html_e95494f3d04a9f7e1d21351a39d73525" style="width: 100.0%; height: 100.0%;"><b>Юбилейный</b><br><small>Code: YUBIL1A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_25de1c446d2ffdfdeb166e65e36c254d.setContent(html_e95494f3d04a9f7e1d21351a39d73525);
+
+
+
+        circle_marker_867a5313114ebca03885d2640dc9bb7f.bindPopup(popup_25de1c446d2ffdfdeb166e65e36c254d)
+        ;
+
+
+
+
+            circle_marker_867a5313114ebca03885d2640dc9bb7f.bindTooltip(
+                `<div>
+                     Юбилейный (2, 3, 3 до ЦРБ, 3 через ГИБДД, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_38056647738d43845feed30c7e53d3d2 = L.circleMarker(
+                [56.2271978, 51.0707517],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_ed900d370fca45fe82632696b8aa630d = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_2f3dc0e0826809f8bd5744b267892cc6 = $(`<div id="html_2f3dc0e0826809f8bd5744b267892cc6" style="width: 100.0%; height: 100.0%;"><b>Библиотека</b><br><small>Code: BIBLIOB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span></div>`)[0];
+                popup_ed900d370fca45fe82632696b8aa630d.setContent(html_2f3dc0e0826809f8bd5744b267892cc6);
+
+
+
+        circle_marker_38056647738d43845feed30c7e53d3d2.bindPopup(popup_ed900d370fca45fe82632696b8aa630d)
+        ;
+
+
+
+
+            circle_marker_38056647738d43845feed30c7e53d3d2.bindTooltip(
+                `<div>
+                     Библиотека (3, 3 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_ea25e9f4c281954c0dbff047318c3fc5 = L.circleMarker(
+                [56.2243034, 51.074603],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_de674a9866761db88e17bdd272913112 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_1d9435c57b60987e5f67861331c795fc = $(`<div id="html_1d9435c57b60987e5f67861331c795fc" style="width: 100.0%; height: 100.0%;"><b>Техникум</b><br><small>Code: TEHNIKB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_de674a9866761db88e17bdd272913112.setContent(html_1d9435c57b60987e5f67861331c795fc);
+
+
+
+        circle_marker_ea25e9f4c281954c0dbff047318c3fc5.bindPopup(popup_de674a9866761db88e17bdd272913112)
+        ;
+
+
+
+
+            circle_marker_ea25e9f4c281954c0dbff047318c3fc5.bindTooltip(
+                `<div>
+                     Техникум (2, 3, 3 до ЦРБ, 3 через ГИБДД, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_b902667cbdc18e7cf5c8c66d18b760ba = L.circleMarker(
+                [56.2201388, 51.0779188],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_7e1e4b54d760d2139a95f2c3cd87197e = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_4dbb5ad75983fc416a340a7eeb1216ac = $(`<div id="html_4dbb5ad75983fc416a340a7eeb1216ac" style="width: 100.0%; height: 100.0%;"><b>Гимназия</b><br><small>Code: GIMNAZA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_7e1e4b54d760d2139a95f2c3cd87197e.setContent(html_4dbb5ad75983fc416a340a7eeb1216ac);
+
+
+
+        circle_marker_b902667cbdc18e7cf5c8c66d18b760ba.bindPopup(popup_7e1e4b54d760d2139a95f2c3cd87197e)
+        ;
+
+
+
+
+            circle_marker_b902667cbdc18e7cf5c8c66d18b760ba.bindTooltip(
+                `<div>
+                     Гимназия (2, 3, 3 до ЦРБ, 3 через ГИБДД, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_e76e0ba4a2637371478ceba2d7767238 = L.circleMarker(
+                [56.2234261, 51.0484095],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_b4bc8c659472c1c501511856c57a5d7c = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_56642b81046e1ccf40f71c0f8061bc47 = $(`<div id="html_56642b81046e1ccf40f71c0f8061bc47" style="width: 100.0%; height: 100.0%;"><b>Почта №5</b><br><small>Code: POCHTA5B</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_b4bc8c659472c1c501511856c57a5d7c.setContent(html_56642b81046e1ccf40f71c0f8061bc47);
+
+
+
+        circle_marker_e76e0ba4a2637371478ceba2d7767238.bindPopup(popup_b4bc8c659472c1c501511856c57a5d7c)
+        ;
+
+
+
+
+            circle_marker_e76e0ba4a2637371478ceba2d7767238.bindTooltip(
+                `<div>
+                     Почта №5 (3, 3 от ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_b52de7d44d96921e930b27a4d99cffda = L.circleMarker(
+                [56.2265483, 51.0878366],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_6c94f1e54544e81b85b3635a588a18c5 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_474b0b16c6db4c6e6cda9dba3cab95dc = $(`<div id="html_474b0b16c6db4c6e6cda9dba3cab95dc" style="width: 100.0%; height: 100.0%;"><b>Музей</b><br><small>Code: MUZEY1B</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span></div>`)[0];
+                popup_6c94f1e54544e81b85b3635a588a18c5.setContent(html_474b0b16c6db4c6e6cda9dba3cab95dc);
+
+
+
+        circle_marker_b52de7d44d96921e930b27a4d99cffda.bindPopup(popup_6c94f1e54544e81b85b3635a588a18c5)
+        ;
+
+
+
+
+            circle_marker_b52de7d44d96921e930b27a4d99cffda.bindTooltip(
+                `<div>
+                     Музей (2)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_0ea5f86f789cd332ce8395ba6c3c9643 = L.circleMarker(
+                [56.2184161, 51.0811579],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_b6dd44a514b18a9d1f1573a4164f6e98 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_5ec20227bed2a7ea27a046d8b4d9acf5 = $(`<div id="html_5ec20227bed2a7ea27a046d8b4d9acf5" style="width: 100.0%; height: 100.0%;"><b>Центральная районная больница</b><br><small>Code: TSRB01C</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_b6dd44a514b18a9d1f1573a4164f6e98.setContent(html_5ec20227bed2a7ea27a046d8b4d9acf5);
+
+
+
+        circle_marker_0ea5f86f789cd332ce8395ba6c3c9643.bindPopup(popup_b6dd44a514b18a9d1f1573a4164f6e98)
+        ;
+
+
+
+
+            circle_marker_0ea5f86f789cd332ce8395ba6c3c9643.bindTooltip(
+                `<div>
+                     Центральная районная больница (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_50fc4bb114844cf8b8af60ec2bdc717b = L.circleMarker(
+                [56.2196808, 51.0785991],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_df255208db17efa17a038f6f24739d84 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_31d9cd58fa9676e120f218324a318bf0 = $(`<div id="html_31d9cd58fa9676e120f218324a318bf0" style="width: 100.0%; height: 100.0%;"><b>Гимназия</b><br><small>Code: GIMNAZB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span></div>`)[0];
+                popup_df255208db17efa17a038f6f24739d84.setContent(html_31d9cd58fa9676e120f218324a318bf0);
+
+
+
+        circle_marker_50fc4bb114844cf8b8af60ec2bdc717b.bindPopup(popup_df255208db17efa17a038f6f24739d84)
+        ;
+
+
+
+
+            circle_marker_50fc4bb114844cf8b8af60ec2bdc717b.bindTooltip(
+                `<div>
+                     Гимназия (1)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_6aface76bcd922bcdac1e7158882ca77 = L.circleMarker(
+                [56.2244147, 51.084803],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_f37e023414f834572b1d6f03d764e02a = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_5c0c0e36de0c4fa597951b6c2b9a6abb = $(`<div id="html_5c0c0e36de0c4fa597951b6c2b9a6abb" style="width: 100.0%; height: 100.0%;"><b>Улица Пароходная</b><br><small>Code: ULPAROB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span></div>`)[0];
+                popup_f37e023414f834572b1d6f03d764e02a.setContent(html_5c0c0e36de0c4fa597951b6c2b9a6abb);
+
+
+
+        circle_marker_6aface76bcd922bcdac1e7158882ca77.bindPopup(popup_f37e023414f834572b1d6f03d764e02a)
+        ;
+
+
+
+
+            circle_marker_6aface76bcd922bcdac1e7158882ca77.bindTooltip(
+                `<div>
+                     Улица Пароходная (2)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_42aac376ca31eb37b118b731f8564a75 = L.circleMarker(
+                [56.2168322, 51.0745651],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_f868d08e6706f64dc17f0afc860d2866 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_f4f9cf26220c99075e70814b65816e3a = $(`<div id="html_f4f9cf26220c99075e70814b65816e3a" style="width: 100.0%; height: 100.0%;"><b>улица Островского</b><br><small>Code: ULOSTRV</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span></div>`)[0];
+                popup_f868d08e6706f64dc17f0afc860d2866.setContent(html_f4f9cf26220c99075e70814b65816e3a);
+
+
+
+        circle_marker_42aac376ca31eb37b118b731f8564a75.bindPopup(popup_f868d08e6706f64dc17f0afc860d2866)
+        ;
+
+
+
+
+            circle_marker_42aac376ca31eb37b118b731f8564a75.bindTooltip(
+                `<div>
+                     улица Островского (5)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_3d331952257ebb19098cc9a684ab9415 = L.circleMarker(
+                [56.2179672, 51.0660061],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_eee0a0b2f725f1a1adef74065ee98de7 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_44f80060599b9f9c6e68a9b37f52f32a = $(`<div id="html_44f80060599b9f9c6e68a9b37f52f32a" style="width: 100.0%; height: 100.0%;"><b>ул. Ваганова</b><br><small>Code: ULVAGAN</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span></div>`)[0];
+                popup_eee0a0b2f725f1a1adef74065ee98de7.setContent(html_44f80060599b9f9c6e68a9b37f52f32a);
+
+
+
+        circle_marker_3d331952257ebb19098cc9a684ab9415.bindPopup(popup_eee0a0b2f725f1a1adef74065ee98de7)
+        ;
+
+
+
+
+            circle_marker_3d331952257ebb19098cc9a684ab9415.bindTooltip(
+                `<div>
+                     ул. Ваганова (5)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_ccde20ad50b200a69c2abbb7373b6567 = L.circleMarker(
+                [56.2280534, 51.0801347],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_b0f8463ef5d34a7fd78658a543fca7e9 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_186db1185132c4fae0a66fd0b0263134 = $(`<div id="html_186db1185132c4fae0a66fd0b0263134" style="width: 100.0%; height: 100.0%;"><b>ГИБДД</b><br><small>Code: GIBDD1A</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span></div>`)[0];
+                popup_b0f8463ef5d34a7fd78658a543fca7e9.setContent(html_186db1185132c4fae0a66fd0b0263134);
+
+
+
+        circle_marker_ccde20ad50b200a69c2abbb7373b6567.bindPopup(popup_b0f8463ef5d34a7fd78658a543fca7e9)
+        ;
+
+
+
+
+            circle_marker_ccde20ad50b200a69c2abbb7373b6567.bindTooltip(
+                `<div>
+                     ГИБДД (3 через ГИБДД, 4, 4 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_af453600ff3a504b4fc0836695a90d56 = L.circleMarker(
+                [56.2225485, 51.0326797],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_005f549c32e484b66b1ce5023cbd2011 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_6390a0311d916e3193976ce9af7c05a1 = $(`<div id="html_6390a0311d916e3193976ce9af7c05a1" style="width: 100.0%; height: 100.0%;"><b>Мясокомбинат</b><br><small>Code: MYASOKB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span></div>`)[0];
+                popup_005f549c32e484b66b1ce5023cbd2011.setContent(html_6390a0311d916e3193976ce9af7c05a1);
+
+
+
+        circle_marker_af453600ff3a504b4fc0836695a90d56.bindPopup(popup_005f549c32e484b66b1ce5023cbd2011)
+        ;
+
+
+
+
+            circle_marker_af453600ff3a504b4fc0836695a90d56.bindTooltip(
+                `<div>
+                     Мясокомбинат (3, 3 от ЦРБ, 3 через ГИБДД)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_ee666849265634d8731e7a0008809f0c = L.circleMarker(
+                [56.2282908, 51.0876542],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_bfbe6205ce6930e17875615b40f7d2ac = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_4bafd931798b45257a6c65e873b2b859 = $(`<div id="html_4bafd931798b45257a6c65e873b2b859" style="width: 100.0%; height: 100.0%;"><b>Районный суд</b><br><small>Code: RAISUDA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_bfbe6205ce6930e17875615b40f7d2ac.setContent(html_4bafd931798b45257a6c65e873b2b859);
+
+
+
+        circle_marker_ee666849265634d8731e7a0008809f0c.bindPopup(popup_bfbe6205ce6930e17875615b40f7d2ac)
+        ;
+
+
+
+
+            circle_marker_ee666849265634d8731e7a0008809f0c.bindTooltip(
+                `<div>
+                     Районный суд (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_5bbe85dfe649960e8e8ecfc53419c4f7 = L.circleMarker(
+                [56.2198523, 51.0848433],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_bd08f0c129c1241e5815390146567ae4 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_5d2f10e1524ba39b332ece9ff5c7e0fd = $(`<div id="html_5d2f10e1524ba39b332ece9ff5c7e0fd" style="width: 100.0%; height: 100.0%;"><b>Рембыттехника</b><br><small>Code: REMBYTB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span></div>`)[0];
+                popup_bd08f0c129c1241e5815390146567ae4.setContent(html_5d2f10e1524ba39b332ece9ff5c7e0fd);
+
+
+
+        circle_marker_5bbe85dfe649960e8e8ecfc53419c4f7.bindPopup(popup_bd08f0c129c1241e5815390146567ae4)
+        ;
+
+
+
+
+            circle_marker_5bbe85dfe649960e8e8ecfc53419c4f7.bindTooltip(
+                `<div>
+                     Рембыттехника (1, 1 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_a9aa2bdaebb2e3a2bfe6e95fe5403188 = L.circleMarker(
+                [56.2198419, 51.0659981],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_6e5561a576cdb5b30a4c27b34fb0b4ab = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_7ecfe268bcfb67df12ae9ee216589df9 = $(`<div id="html_7ecfe268bcfb67df12ae9ee216589df9" style="width: 100.0%; height: 100.0%;"><b>ул. Карла Маркса</b><br><small>Code: ULKMAXA</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span></div>`)[0];
+                popup_6e5561a576cdb5b30a4c27b34fb0b4ab.setContent(html_7ecfe268bcfb67df12ae9ee216589df9);
+
+
+
+        circle_marker_a9aa2bdaebb2e3a2bfe6e95fe5403188.bindPopup(popup_6e5561a576cdb5b30a4c27b34fb0b4ab)
+        ;
+
+
+
+
+            circle_marker_a9aa2bdaebb2e3a2bfe6e95fe5403188.bindTooltip(
+                `<div>
+                     ул. Карла Маркса (5)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_495e2a8b2c17ee70f25593e450403915 = L.circleMarker(
+                [56.2179702, 51.0796452],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_203a1024cddd2f81d5dd58ffe161caed = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_61a806e85baebfd72d8b6cf319a9ad8e = $(`<div id="html_61a806e85baebfd72d8b6cf319a9ad8e" style="width: 100.0%; height: 100.0%;"><b>Центральная районная больница</b><br><small>Code: TSRB01D</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span></div>`)[0];
+                popup_203a1024cddd2f81d5dd58ffe161caed.setContent(html_61a806e85baebfd72d8b6cf319a9ad8e);
+
+
+
+        circle_marker_495e2a8b2c17ee70f25593e450403915.bindPopup(popup_203a1024cddd2f81d5dd58ffe161caed)
+        ;
+
+
+
+
+            circle_marker_495e2a8b2c17ee70f25593e450403915.bindTooltip(
+                `<div>
+                     Центральная районная больница (5)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_c879c478d0be9182a5c4918faf92ce82 = L.circleMarker(
+                [56.2211071, 51.0758253],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_34554376c88b9e7ad0bdb87d8bb4366f = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_af47eebc5b9085b1459dd0242487efc7 = $(`<div id="html_af47eebc5b9085b1459dd0242487efc7" style="width: 100.0%; height: 100.0%;"><b>Центральный микрорайон</b><br><small>Code: TSENMIC</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span></div>`)[0];
+                popup_34554376c88b9e7ad0bdb87d8bb4366f.setContent(html_af47eebc5b9085b1459dd0242487efc7);
+
+
+
+        circle_marker_c879c478d0be9182a5c4918faf92ce82.bindPopup(popup_34554376c88b9e7ad0bdb87d8bb4366f)
+        ;
+
+
+
+
+            circle_marker_c879c478d0be9182a5c4918faf92ce82.bindTooltip(
+                `<div>
+                     Центральный микрорайон (5)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_3e85ba48cda261e61ab0502208f2fac3 = L.circleMarker(
+                [56.2248016, 51.07941],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_e78ac8eaebcf6582859ad4ef03f9c70a = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_b769efd3edcddb41134ed61982328c5f = $(`<div id="html_b769efd3edcddb41134ed61982328c5f" style="width: 100.0%; height: 100.0%;"><b>Автостанция</b><br><small>Code: AVTOSТА</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#aaff00;font-weight:bold;'>Route 3 от ЦРБ</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_e78ac8eaebcf6582859ad4ef03f9c70a.setContent(html_b769efd3edcddb41134ed61982328c5f);
+
+
+
+        circle_marker_3e85ba48cda261e61ab0502208f2fac3.bindPopup(popup_e78ac8eaebcf6582859ad4ef03f9c70a)
+        ;
+
+
+
+
+            circle_marker_3e85ba48cda261e61ab0502208f2fac3.bindTooltip(
+                `<div>
+                     Автостанция (3, 3 от ЦРБ, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_41100fd57baa67687e15294582e3e690 = L.circleMarker(
+                [56.2285771, 51.0879255],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_ff92d9a7f596147eef6e8ebaf3050150 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_017d946b25b051117335898e0d731eb0 = $(`<div id="html_017d946b25b051117335898e0d731eb0" style="width: 100.0%; height: 100.0%;"><b>Районный суд</b><br><small>Code: RAISUDB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span></div>`)[0];
+                popup_ff92d9a7f596147eef6e8ebaf3050150.setContent(html_017d946b25b051117335898e0d731eb0);
+
+
+
+        circle_marker_41100fd57baa67687e15294582e3e690.bindPopup(popup_ff92d9a7f596147eef6e8ebaf3050150)
+        ;
+
+
+
+
+            circle_marker_41100fd57baa67687e15294582e3e690.bindTooltip(
+                `<div>
+                     Районный суд (2)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_862f994612d1a00fdd253b958ed45b22 = L.circleMarker(
+                [56.2311752, 51.0798339],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_f9f8c9edf6a4ec6e959cf7e74de1168b = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_71bd66dab3eca0bf9756d57044ea4cd4 = $(`<div id="html_71bd66dab3eca0bf9756d57044ea4cd4" style="width: 100.0%; height: 100.0%;"><b>Ленинский микрорайон</b><br><small>Code: LENINKB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span></div>`)[0];
+                popup_f9f8c9edf6a4ec6e959cf7e74de1168b.setContent(html_71bd66dab3eca0bf9756d57044ea4cd4);
+
+
+
+        circle_marker_862f994612d1a00fdd253b958ed45b22.bindPopup(popup_f9f8c9edf6a4ec6e959cf7e74de1168b)
+        ;
+
+
+
+
+            circle_marker_862f994612d1a00fdd253b958ed45b22.bindTooltip(
+                `<div>
+                     Ленинский микрорайон (3 через ГИБДД, 4, 4 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_9516b5c89ae59e49f6645a2eab5870fc = L.circleMarker(
+                [56.2256864, 51.0801692],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_10e67ddca356844e71bcd59fc970cd55 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_c8d45a77d0e277eba7d2034b47afd59b = $(`<div id="html_c8d45a77d0e277eba7d2034b47afd59b" style="width: 100.0%; height: 100.0%;"><b>Автостанция</b><br><small>Code: AVTOSTB</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#ffcc00;font-weight:bold;'>Route 4 от ЦРБ</span></div>`)[0];
+                popup_10e67ddca356844e71bcd59fc970cd55.setContent(html_c8d45a77d0e277eba7d2034b47afd59b);
+
+
+
+        circle_marker_9516b5c89ae59e49f6645a2eab5870fc.bindPopup(popup_10e67ddca356844e71bcd59fc970cd55)
+        ;
+
+
+
+
+            circle_marker_9516b5c89ae59e49f6645a2eab5870fc.bindTooltip(
+                `<div>
+                     Автостанция (3 через ГИБДД, 4, 4 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_a090c792f900d8ec292424fbe84cb011 = L.circleMarker(
+                [56.2284466, 51.0715784],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_8635c369209cc0d238d7e33942fc9ff2 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_df4d94229c142abc75b6ee85b2136c6e = $(`<div id="html_df4d94229c142abc75b6ee85b2136c6e" style="width: 100.0%; height: 100.0%;"><b>Юбилейный</b><br><small>Code: YUBIL1B</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#6562f8;font-weight:bold;'>Route 6 от ЦРБ</span></div>`)[0];
+                popup_8635c369209cc0d238d7e33942fc9ff2.setContent(html_df4d94229c142abc75b6ee85b2136c6e);
+
+
+
+        circle_marker_a090c792f900d8ec292424fbe84cb011.bindPopup(popup_8635c369209cc0d238d7e33942fc9ff2)
+        ;
+
+
+
+
+            circle_marker_a090c792f900d8ec292424fbe84cb011.bindTooltip(
+                `<div>
+                     Юбилейный (1, 5, 6, 6 от ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            var circle_marker_e8038db7795ecceadc692966e1be3133 = L.circleMarker(
+                [56.228795, 51.033545],
+                {"bubblingMouseEvents": true, "color": "darkblue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "lightblue", "fillOpacity": 0.9, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 2}
+            ).addTo(feature_group_a9e11815feb022e826172f4ee5aafc5b);
+
+
+        var popup_abd8772968d836b83fb85c19aabf7928 = L.popup({
+  "maxWidth": 300,
+});
+
+
+
+                var html_4e153028395bc1f854afd3b5cf665a7b = $(`<div id="html_4e153028395bc1f854afd3b5cf665a7b" style="width: 100.0%; height: 100.0%;"><b>Вокзал</b><br><small>Code: VOKZAL2</small><br><hr style='margin:5px 0;'><b>Routes:</b><br><span style='color:#e100ff;font-weight:bold;'>Route 1</span><br><span style='color:#ff0062;font-weight:bold;'>Route 1 до ЦРБ</span><br><span style='color:#00eeff;font-weight:bold;'>Route 2</span><br><span style='color:#00ff48;font-weight:bold;'>Route 3</span><br><span style='color:#039a26;font-weight:bold;'>Route 3 до ЦРБ</span><br><span style='color:#00d18b;font-weight:bold;'>Route 3 через ГИБДД</span><br><span style='color:#eaff00;font-weight:bold;'>Route 4</span><br><span style='color:#8d3ff9;font-weight:bold;'>Route 5</span><br><span style='color:#0400ff;font-weight:bold;'>Route 6</span><br><span style='color:#020084;font-weight:bold;'>Route 6 до ЦРБ</span></div>`)[0];
+                popup_abd8772968d836b83fb85c19aabf7928.setContent(html_4e153028395bc1f854afd3b5cf665a7b);
+
+
+
+        circle_marker_e8038db7795ecceadc692966e1be3133.bindPopup(popup_abd8772968d836b83fb85c19aabf7928)
+        ;
+
+
+
+
+            circle_marker_e8038db7795ecceadc692966e1be3133.bindTooltip(
+                `<div>
+                     Вокзал (1, 1 до ЦРБ, 2, 3, 3 до ЦРБ, 3 через ГИБДД, 4, 5, 6, 6 до ЦРБ)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+
+
+            feature_group_a9e11815feb022e826172f4ee5aafc5b.addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+            var layer_control_e9e0a6e1d3cdeb30e1a0490e82c78ac6_layers = {
+                base_layers : {
+                    "cartodbpositron" : tile_layer_a3f8a948e299bf913cf7ed57de4c0365,
+                },
+                overlays :  {
+                    "\ud83d\ude8c Route 1" : feature_group_5537a7f2648f321e00b38b0e1784cb74,
+                    "\ud83d\ude8c Route 1 \u0434\u043e \u0426\u0420\u0411" : feature_group_652f1e13b3630ca66e66b64f2881e446,
+                    "\ud83d\ude8c Route 2" : feature_group_3c80bb82063b1780dc47bdfa55850b1c,
+                    "\ud83d\ude8c Route 3" : feature_group_0442ee4b2a599e4414c77b64fb3a2bcd,
+                    "\ud83d\ude8c Route 3 \u0434\u043e \u0426\u0420\u0411" : feature_group_5b08ed17af05b70e44065979f780a529,
+                    "\ud83d\ude8c Route 3 \u043e\u0442 \u0426\u0420\u0411" : feature_group_58815050933b94eb24432360798242d2,
+                    "\ud83d\ude8c Route 3 \u0447\u0435\u0440\u0435\u0437 \u0413\u0418\u0411\u0414\u0414" : feature_group_276d15838562eba9f243a75def742f89,
+                    "\ud83d\ude8c Route 4" : feature_group_8e40e344ea862024794617d0ddc17640,
+                    "\ud83d\ude8c Route 4 \u043e\u0442 \u0426\u0420\u0411" : feature_group_4887853fc4940e3e157676099595d139,
+                    "\ud83d\ude8c Route 5" : feature_group_6386582889584e41cedb8a03fd8fe53b,
+                    "\ud83d\ude8c Route 6" : feature_group_506fb448cef13b950b096573bd0950b4,
+                    "\ud83d\ude8c Route 6 \u0434\u043e \u0426\u0420\u0411" : feature_group_f6c61c5f8ef0f4666699f654c4a7f315,
+                    "\ud83d\ude8c Route 6 \u043e\u0442 \u0426\u0420\u0411" : feature_group_c7ff49c531c7351860e39cad5c3f6b45,
+                    "\ud83d\ude8f All Bus Stops" : feature_group_a9e11815feb022e826172f4ee5aafc5b,
+                },
+            };
+            let layer_control_e9e0a6e1d3cdeb30e1a0490e82c78ac6 = L.control.layers(
+                layer_control_e9e0a6e1d3cdeb30e1a0490e82c78ac6_layers.base_layers,
+                layer_control_e9e0a6e1d3cdeb30e1a0490e82c78ac6_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_475c9dedbe65d1cd17d21d50ae0a47d1);
+
+
+
+            var tile_layer_ed8c50974f89bbc722c28f6ee54f18dc = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detect_retina": false, "max_native_zoom": 19, "max_zoom": 19, "min_zoom": 0, "no_wrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            );
+            var mini_map_9d851450422165385d2b9428639c96b5 = new L.Control.MiniMap(
+                tile_layer_ed8c50974f89bbc722c28f6ee54f18dc,
+                {
+  "position": "bottomright",
+  "width": 150,
+  "height": 150,
+  "collapsedWidth": 25,
+  "collapsedHeight": 25,
+  "zoomLevelOffset": -5,
+  "centerFixed": false,
+  "zoomAnimation": false,
+  "toggleDisplay": true,
+  "autoToggleDisplay": false,
+  "minimized": false,
+}
+            );
+            map_475c9dedbe65d1cd17d21d50ae0a47d1.addControl(mini_map_9d851450422165385d2b9428639c96b5);
+
+</script>
+</html>

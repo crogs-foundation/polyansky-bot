@@ -80,9 +80,7 @@ class BusRoute(Base):
 
     __tablename__ = "bus_routes"
 
-    route_number: Mapped[int] = mapped_column(
-        Integer, nullable=False, index=True, unique=True
-    )
+    name: Mapped[str] = mapped_column(String(31), nullable=False, index=True, unique=True)
     origin_stop_code: Mapped[str] = mapped_column(
         String(7), ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
     )
@@ -122,7 +120,7 @@ class BusRoute(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<BusRoute(id={self.id}, number='{self.route_number}', {self.origin_stop_code} -> {self.destination_stop_code})>"
+        return f"<BusRoute(id={self.id}, name='{self.name}', {self.origin_stop_code} -> {self.destination_stop_code})>"
 
 
 class RouteStop(Base):
@@ -135,8 +133,8 @@ class RouteStop(Base):
 
     __tablename__ = "route_stops"
 
-    route_number: Mapped[int] = mapped_column(
-        Integer, ForeignKey("bus_routes.route_number", ondelete="CASCADE"), nullable=False
+    route_name: Mapped[str] = mapped_column(
+        String(31), ForeignKey("bus_routes.name", ondelete="CASCADE"), nullable=False
     )
     stop_code: Mapped[str] = mapped_column(
         String(7), ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
@@ -150,12 +148,12 @@ class RouteStop(Base):
     bus_stop: Mapped["BusStop"] = relationship("BusStop", back_populates="route_stops")
 
     __table_args__ = (
-        UniqueConstraint("route_number", "stop_code", name="uix_route_stop_order"),
+        UniqueConstraint("route_name", "stop_code", name="uix_route_stop_order"),
     )
 
     def __repr__(self) -> str:
         return (
-            f"<RouteStop(route_number={self.route_number}, "
+            f"<RouteStop(route_name={self.route_name}, "
             f"stop_code={self.stop_code}, order={self.stop_order})>"
         )
 
@@ -170,8 +168,8 @@ class RouteSchedule(Base):
 
     __tablename__ = "route_schedules"
 
-    route_number: Mapped[int] = mapped_column(
-        Integer, ForeignKey("bus_routes.route_number", ondelete="CASCADE"), nullable=False
+    route_name: Mapped[str] = mapped_column(
+        String(31), ForeignKey("bus_routes.name", ondelete="CASCADE"), nullable=False
     )
     departure_time: Mapped[time] = mapped_column(
         Time, nullable=False, index=True
@@ -212,12 +210,12 @@ class RouteSchedule(Base):
     route: Mapped["BusRoute"] = relationship("BusRoute", back_populates="schedules")
 
     __table_args__ = (
-        UniqueConstraint("route_number", "departure_time", name="uix_route_departure"),
+        UniqueConstraint("route_name", "departure_time", name="uix_route_departure"),
     )
 
     def __repr__(self) -> str:
         return (
-            f"<RouteSchedule(route_number={self.route_number}, "
+            f"<RouteSchedule(route_name={self.route_name}, "
             f"departure={self.departure_time})>"
         )
 
@@ -232,8 +230,8 @@ class StopSchedule(Base):
 
     __tablename__ = "stop_schedules"
 
-    route_number: Mapped[int] = mapped_column(
-        Integer, ForeignKey("bus_routes.route_number", ondelete="CASCADE"), nullable=False
+    route_name: Mapped[str] = mapped_column(
+        String(31), ForeignKey("bus_routes.name", ondelete="CASCADE"), nullable=False
     )
     stop_code: Mapped[str] = mapped_column(
         String(7), ForeignKey("bus_stops.code", ondelete="CASCADE"), nullable=False
@@ -276,12 +274,12 @@ class StopSchedule(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "route_number", "stop_code", "arrival_time", name="uix_route_stop_arrival"
+            "route_name", "stop_code", "arrival_time", name="uix_route_stop_arrival"
         ),
     )
 
     def __repr__(self) -> str:
         return (
-            f"<StopSchedule(route_number={self.route_number}, stop_code={self.stop_code}, "
+            f"<StopSchedule(route_name={self.route_name}, stop_code={self.stop_code}, "
             f"arrival={self.arrival_time})>"
         )

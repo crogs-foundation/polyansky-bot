@@ -24,7 +24,7 @@ class BusRouteRepository(BaseRepository[BusRoute]):
             List of matching bus stops ordered by relevance.
         """
 
-        stmt = select(BusRoute).where(BusRoute.route_number == route_number)
+        stmt = select(BusRoute).where(BusRoute.name == route_number)
 
         result = await self.session.execute(stmt)
         return result.scalars().first()
