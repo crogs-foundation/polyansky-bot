@@ -71,7 +71,7 @@ route_name,stop_code,stop_order
 3,GIMNAZA,13
 3,TSRB01A,14
 3,AVTOSТА,15
-3,BIBLIOB,16
+3,BIBLIOT,16
 3,STADIONA,17
 3,ZHENMONA,18
 3,POCHTA5B,19
@@ -97,7 +97,7 @@ route_name,stop_code,stop_order
 3 до ЦРБ,TSRB01A,14
 3 от ЦРБ,TSRB01A,1
 3 от ЦРБ,AVTOSТА,2
-3 от ЦРБ,BIBLIOB,3
+3 от ЦРБ,BIBLIOT,3
 3 от ЦРБ,STADIONA,4
 3 от ЦРБ,ZHENMONA,5
 3 от ЦРБ,POCHTA5B,6
@@ -134,6 +134,63 @@ route_name,stop_code,stop_order
 3 через ГИБДД,VOKZAL1,25
 3 через ГИБДД,SHKOLA5B,26
 3 через ГИБДД,PEREEZB,27
+3 до Кооператива,PEREEZD,1
+3 до Кооператива,SHKOLA5A,2
+3 до Кооператива,VOKZAL2,3
+3 до Кооператива,MYASOKA,4
+3 до Кооператива,SELHTEH,5
+3 до Кооператива,POTREBB,6
+3 до Кооператива,POCHTA5,7
+3 до Кооператива,ZHENMONB,8
+3 до Кооператива,STADIONB,9
+3 до Кооператива,ZAVOD1A,10
+3 до Кооператива,YUBIL1A,11
+3 до Кооператива,TEHNIKB,12
+3 до Кооператива,GIMNAZA,13
+3 до Кооператива,TSRB01A,14
+3 до Кооператива,AVTOSТА,15
+3 до Кооператива,BIBLIOT,16
+3 до Кооператива,STADIONA,17
+3 до Кооператива,ZHENMONA,18
+3 до Кооператива,POCHTA5B,19
+3 до Кооператива,POTREBA,20
+3 до Кооператива,SELHTEB,21
+3 до Кооператива,MYASOKB,22
+3 до Кооператива,VOKZAL1,23
+3 до Кооператива,SHKOLA5B,24
+3 до Кооператива,PEREEZB,25
+3 до Кооператива,KOOPERA,26
+3 от ЦРБ до СХТ через ул. Cоветскую,TSRB01A,14
+3 от ЦРБ до СХТ через ул. Cоветскую,REMBYTA,15
+3 от ЦРБ до СХТ через ул. Cоветскую,ULPAROB,16
+3 от ЦРБ до СХТ через ул. Cоветскую,MUZEY1B,17
+3 от ЦРБ до СХТ через ул. Cоветскую,RAISUDB,18
+3 от ЦРБ до СХТ через ул. Cоветскую,NABERA2,19
+3 от ЦРБ до СХТ через ул. Cоветскую,SHKISKUB,20
+3 от ЦРБ до СХТ через ул. Cоветскую,STADIONA,21
+3 от ЦРБ до СХТ через ул. Cоветскую,ZHENMONA,22
+3 от ЦРБ до СХТ через ул. Cоветскую,POCHTA5B,23
+3 от ЦРБ до СХТ через ул. Cоветскую,POTREBA,24
+3 от ЦРБ до СХТ через ул. Cоветскую,SELHTEB,25
+3 через ГИБДД до библиотеки,PEREEZD,1
+3 через ГИБДД до библиотеки,SHKOLA5A,2
+3 через ГИБДД до библиотеки,VOKZAL2,3
+3 через ГИБДД до библиотеки,MYASOKA,4
+3 через ГИБДД до библиотеки,SELHTEH,5
+3 через ГИБДД до библиотеки,POTREBB,6
+3 через ГИБДД до библиотеки,POCHTA5,7
+3 через ГИБДД до библиотеки,ZHENMONB,8
+3 через ГИБДД до библиотеки,STADIONB,9
+3 через ГИБДД до библиотеки,ZAVOD1A,10
+3 через ГИБДД до библиотеки,YUBIL1A,11
+3 через ГИБДД до библиотеки,TEHNIKB,12
+3 через ГИБДД до библиотеки,GIMNAZA,13
+3 через ГИБДД до библиотеки,TSRB01A,14
+3 через ГИБДД до библиотеки,AVTOSTB,15
+3 через ГИБДД до библиотеки,GIBDD1A,16
+3 через ГИБДД до библиотеки,LENINKB,17
+3 через ГИБДД до библиотеки,SHKISKUB,18
+3 через ГИБДД до библиотеки,BIBLIOT,19
 4,VOKZAL2,1
 4,SHKOLA5B,2
 4,PEREEZB,3
@@ -154,6 +211,16 @@ route_name,stop_code,stop_order
 4,PEREEZD,19
 4,SHKOLA5A,20
 4,VOKZAL1,21
+4 до ЦРБ,VOKZAL2,1
+4 до ЦРБ,SHKOLA5B,2
+4 до ЦРБ,PEREEZB,3
+4 до ЦРБ,TOYMENB,4
+4 до ЦРБ,NALOG1B,5
+4 до ЦРБ,ZAVOD1C,6
+4 до ЦРБ,YUBIL1A,8
+4 до ЦРБ,TEHNIKB,9
+4 до ЦРБ,GIMNAZA,10
+4 до ЦРБ,TSRB01A,11
 4 от ЦРБ,TSRB01A,1
 4 от ЦРБ,AVTOSTB,2
 4 от ЦРБ,GIBDD1A,3
@@ -187,6 +254,19 @@ route_name,stop_code,stop_order
 5,PEREEZD,20
 5,SHKOLA5A,21
 5,VOKZAL1,22
+5 от ЦРБ,TSRB01D,0
+5 от ЦРБ,ULOSTRV,1
+5 от ЦРБ,ULVAGAN,2
+5 от ЦРБ,ULKMAXA,3
+5 от ЦРБ,TSENMIC,4
+5 от ЦРБ,TEHNIKM,5
+5 от ЦРБ,YUBIL1B,6
+5 от ЦРБ,ZAVOD1B,7
+5 от ЦРБ,NALOG1A,8
+5 от ЦРБ,TOYMENA,9
+5 от ЦРБ,PEREEZD,10
+5 от ЦРБ,SHKOLA5A,11
+5 от ЦРБ,VOKZAL1,12
 6,VOKZAL2,1
 6,SHKOLA5B,2
 6,PEREEZB,3

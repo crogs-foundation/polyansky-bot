@@ -1,15 +1,25 @@
 name,origin_stop_code,destination_stop_code,description,color,is_active
 1,VOKZAL2,VOKZAL1,"",#e100ffff,True
 1 до ЦРБ,VOKZAL2,TSRB01C,"",#ff0062ff,True
+
 2,VOKZAL2,VOKZAL1,"",#00eeffff,True
-3,PEREEZD,PEREEZB,"",#00ff48ff,True
-3 до ЦРБ,PEREEZD,TSRB01A,"",#039a26ff,True
-3 от ЦРБ до СХТ через ул. советскую,TSRB01A,SELHTEH,"",#039a26ff,True
-3 через ГИБДД до Библиотеки,PEREEZD,BIBLIOT,"",#aaff00ff,True
-3 через ГИБДД,PEREEZD,PEREEZB,"",#00d18bff,True
-3 до Кооператива,PEREEZD,PEREEZB,"",#00d18bff,True
+
 4,VOKZAL2,VOKZAL1,"",#eaff00ff,True
 4 до ЦРБ,VOKZAL2,TSRB01A,"",#ffcc00ff,True
+4 от ЦРБ,TSRB01A,VOKZAL1,"",#ffcc00ff,True
+
 5,VOKZAL2,VOKZAL1,"",#8d3ff9ff,True
+5 от ЦРБ,TSRB01A,VOKZAL1,"",#8d3ff9ff,True
+
 6,VOKZAL2,TSRB01A,"",#0400ffff,True
 6 до ЦРБ,VOKZAL2,TSRB01A,"",#020084ff,True
+6 от ЦРБ,TSRB01A,VOKZAL1,"",#020084ff,True
+
+3,PEREEZD,PEREEZB,"",#00ff48ff,True
+3 до Кооператива,KOOPERA,KOOPERA,"",#00d18bff,True
+3 до ЦРБ,PEREEZD,TSRB01A,"",#039a26ff,True
+3 от ЦРБ,TSRB01A,PEREEZB,"",#039a26ff,True
+3 через ГИБДД,PEREEZD,PEREEZB,"",#00d18bff,True
+
+3 через ГИБДД до библиотеки,PEREEZD,BIBLIOT,"",#aaff00ff,True
+3 от ЦРБ до СХТ через ул. Cоветскую,TSRB01A,SELHTEH,"",#039a26ff,True

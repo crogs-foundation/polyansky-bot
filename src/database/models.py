@@ -209,8 +209,14 @@ class RouteSchedule(Base):
     # Relationships
     route: Mapped["BusRoute"] = relationship("BusRoute", back_populates="schedules")
 
+    # TODO fix constraint
     __table_args__ = (
-        UniqueConstraint("route_name", "departure_time", name="uix_route_departure"),
+        # UniqueConstraint(
+        #     "route_name", "departure_time",
+        #     "monday","tuesday","wednesday",
+        #     "thursday","friday","saturday",
+        #     "sunday", name="uix_route_departure"
+        # ),
     )
 
     def __repr__(self) -> str:
@@ -272,10 +278,11 @@ class StopSchedule(Base):
     route: Mapped["BusRoute"] = relationship("BusRoute", back_populates="stop_schedules")
     stop: Mapped["BusStop"] = relationship("BusStop", back_populates="stop_schedules")
 
+    # TODO: Fix unique constraint
     __table_args__ = (
-        UniqueConstraint(
-            "route_name", "stop_code", "arrival_time", name="uix_route_stop_arrival"
-        ),
+        # UniqueConstraint(
+        #     "route_name", "stop_code", "arrival_time", name="uix_route_stop_arrival"
+        # ),
     )
 
     def __repr__(self) -> str:

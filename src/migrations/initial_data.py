@@ -109,7 +109,7 @@ async def load_route_stops(
                     continue
 
                 await repo.add(
-                    route_name=route.route_name,
+                    route_name=route.name,
                     stop_code=stop.code,
                     stop_order=int(row["stop_order"]),
                 )
@@ -211,7 +211,7 @@ async def load_stop_schedules(
 
                 schedule_data.append(
                     {
-                        "route_name": route.route_name,
+                        "route_name": route.name,
                         "stop_code": stop.code,
                         "arrival_time": arrival_time,
                         "is_active": row["is_active"].lower() == "true"
