@@ -24,6 +24,7 @@ from bot.keyboards.callbacks import (
 )
 from bot.states.bus_route import BusRouteStates
 from database.repositories.bus_stop import BusStopRepository
+from database.repositories.display_bus_stop import DisplayBusStopRepository
 from services.route_finder import RouteFinder
 
 router = Router(name="bus_route")
@@ -45,9 +46,7 @@ async def show_route_menu(
 
     # Initialize FSM data
     await state.update_data(
-        origin_code=None,
         origin_name=None,
-        destination_code=None,
         destination_name=None,
         departure_time="Сейчас",
         arrival_time="Как можно скорее",
@@ -152,7 +151,7 @@ async def process_location(
 
     # Update state data
     field = "origin" if current_state and "origin" in current_state else "destination"
-    await state.update_data(**{f"{field}_code": stop.code, f"{field}_name": stop.name})
+    await state.update_data(**{f"{field}_name": stop.name})
 
     # Return to menu
     await state.set_state(BusRouteStates.menu)
@@ -176,7 +175,7 @@ async def show_stop_list(
     callback: CallbackQuery,
     state: FSMContext,
     callback_data: InputMethodCallback,
-    bus_stop_repo: BusStopRepository,
+    display_bus_stop_repo: DisplayBusStopRepository,
 ):
     """Show paginated list of all bus stops."""
     field = callback_data.field
@@ -188,9 +187,9 @@ async def show_stop_list(
         await state.set_state(BusRouteStates.waiting_destination_list)
 
     # Get first page of stops
-    total_count = await bus_stop_repo.count()
+    total_count = await display_bus_stop_repo.count()
     total_pages = (total_count + STOPS_PER_PAGE - 1) // STOPS_PER_PAGE
-    stops = await bus_stop_repo.get_all(limit=STOPS_PER_PAGE, offset=0)
+    stops = await display_bus_stop_repo.get_all(limit=STOPS_PER_PAGE, offset=0)
 
     await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
         f"📋 <b>Выберите остановку:</b>\n\nСтраница 1 из {total_pages}",
@@ -207,10 +206,10 @@ async def select_stop_from_list(
     callback: CallbackQuery,
     state: FSMContext,
     callback_data: StopListCallback,
-    bus_stop_repo: BusStopRepository,
+    display_bus_stop_repo: DisplayBusStopRepository,
 ):
     """Handle bus stop selection from list."""
-    stop = await bus_stop_repo.get_code(callback_data.stop_code)
+    stop = await display_bus_stop_repo.get_name_exact(callback_data.stop_name)
     field = callback_data.field
 
     if not stop:
@@ -218,7 +217,7 @@ async def select_stop_from_list(
         return
 
     # Update state
-    await state.update_data({f"{field}_code": stop.code, f"{field}_name": stop.name})
+    await state.update_data({f"{field}_name": stop.name})
     await state.set_state(BusRouteStates.menu)
 
     # Return to menu
@@ -262,7 +261,7 @@ async def request_search_query(
     F.text,
 )
 async def process_search_query(
-    message: Message, state: FSMContext, bus_stop_repo: BusStopRepository
+    message: Message, state: FSMContext, display_bus_stop_repo: DisplayBusStopRepository
 ):
     """Search bus stops by user query and show results."""
     if message.text is None:
@@ -274,7 +273,7 @@ async def process_search_query(
     field = "origin" if current_state and "origin" in current_state else "destination"
 
     # Search stops
-    stops = await bus_stop_repo.search_by_name(query, limit=STOPS_PER_PAGE)
+    stops = await display_bus_stop_repo.search_by_name(query, limit=STOPS_PER_PAGE)
 
     if not stops:
         await message.answer(
@@ -428,7 +427,7 @@ async def confirm_route(
     data = await state.get_data()
 
     # Validate required fields
-    if not data.get("origin_code") or not data.get("destination_code"):
+    if not data.get("origin_name") or not data.get("destination_name"):
         await callback.answer(
             "❌ Укажите начальную и конечную остановки", show_alert=True
         )
@@ -449,8 +448,8 @@ async def confirm_route(
 
     try:
         routes = await route_finder.find_routes(
-            origin_code=data["origin_code"],
-            destination_code=data["destination_code"],
+            origin_name=data["origin_name"],
+            destination_name=data["destination_name"],
             departure_time=departure_time,
             max_results=3,
         )
@@ -481,16 +480,16 @@ async def confirm_route(
         await callback.message.edit_text(result_text, parse_mode="HTML")  # ty: ignore [possibly-missing-attribute]
 
         # Send origin location on map
-        origin_stop = await bus_stop_repo.get(data["origin_code"])
-        if origin_stop:
-            await callback.message.answer_location(  # ty: ignore [possibly-missing-attribute]
-                latitude=origin_stop.latitude,
-                longitude=origin_stop.longitude,
-            )
-            await callback.message.answer(  # ty: ignore [possibly-missing-attribute]
-                f"📍 <b>Начальная остановка:</b>\n{origin_stop.name}\n",
-                parse_mode="HTML",
-            )
+        origin_stop = segment.origin_stop
+
+        await callback.message.answer_location(  # ty: ignore [possibly-missing-attribute]
+            latitude=origin_stop.latitude,
+            longitude=origin_stop.longitude,
+        )
+        await callback.message.answer(  # ty: ignore [possibly-missing-attribute]
+            f"📍 <b>Начальная остановка:</b>\n{origin_stop.name}\n",
+            parse_mode="HTML",
+        )
 
     except Exception as e:
         await callback.message.edit_text("❌ Ошибка при поиске маршрутов.")  # ty: ignore [possibly-missing-attribute]
@@ -521,7 +520,7 @@ async def navigate_stop_list(
     callback: CallbackQuery,
     state: FSMContext,
     callback_data: ListNavigationCallback,
-    bus_stop_repo: BusStopRepository,
+    display_bus_stop_repo: DisplayBusStopRepository,
 ):
     """
     Handle pagination navigation in bus stop list.
@@ -532,7 +531,7 @@ async def navigate_stop_list(
     field = callback_data.field
 
     # Get total count for pagination calculation
-    total_count = await bus_stop_repo.count()
+    total_count = await display_bus_stop_repo.count()
     total_pages = (total_count + STOPS_PER_PAGE - 1) // STOPS_PER_PAGE
 
     # Validate page bounds
@@ -542,7 +541,7 @@ async def navigate_stop_list(
 
     # Fetch stops for current page
     offset = page * STOPS_PER_PAGE
-    stops = await bus_stop_repo.get_all(limit=STOPS_PER_PAGE, offset=offset)
+    stops = await display_bus_stop_repo.get_all(limit=STOPS_PER_PAGE, offset=offset)
 
     if not stops:
         await callback.answer("❌ Нет остановок на этой странице", show_alert=True)

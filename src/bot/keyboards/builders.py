@@ -14,7 +14,7 @@ from bot.keyboards.callbacks import (
     StopListCallback,
     TimePresetCallback,
 )
-from database.models import BusStop
+from database.models import DisplayBusStop
 
 
 def build_main_menu_keyboard() -> InlineKeyboardMarkup:
@@ -133,7 +133,7 @@ def build_input_method_keyboard(field: str) -> InlineKeyboardMarkup:
 
 
 def build_stop_list_keyboard(
-    stops: List[BusStop], field: str, page: int = 0, total_pages: int = 1
+    stops: List[DisplayBusStop], field: str, page: int = 0, total_pages: int = 1
 ) -> InlineKeyboardMarkup:
     """
     Build paginated list of bus stops.
@@ -151,12 +151,14 @@ def build_stop_list_keyboard(
     """
     builder = InlineKeyboardBuilder()
 
+    stop_names = list(sorted(set(stop.name for stop in stops)))
+
     # Add stop buttons - one button per row using row() method
-    for stop in stops[:5]:
+    for name in stop_names[:5]:
         builder.row(
             InlineKeyboardButton(
-                text=f"{stop.name}({stop.code})",
-                callback_data=StopListCallback(stop_code=stop.code, field=field).pack(),
+                text=f"{name}",
+                callback_data=StopListCallback(stop_name=name, field=field).pack(),
             )
         )
 

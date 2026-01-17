@@ -7,14 +7,18 @@ from pathlib import Path
 
 from bot.config import load_config
 from database.connection import DatabaseManager
+from database.models import BusStop
 from database.repositories.bus_route import BusRouteRepository
 from database.repositories.bus_route_schedule import BusRouteScheduleRepository
 from database.repositories.bus_route_stop import BusRouteStopRepository
 from database.repositories.bus_stop import BusStopRepository
 from database.repositories.bus_stop_schedule import BusStopScheduleRepository
+from database.repositories.display_bus_stop import DisplayBusStopRepository
 
 
-async def load_bus_stops(csv_path: Path, db_manager: DatabaseManager) -> dict:
+async def load_bus_stops(
+    csv_path: Path, db_manager: DatabaseManager
+) -> dict[str, BusStop]:
     """
     Load bus stops from CSV.
 
@@ -23,6 +27,9 @@ async def load_bus_stops(csv_path: Path, db_manager: DatabaseManager) -> dict:
     """
     async with db_manager.session() as session:
         repo = BusStopRepository(session)
+        display_repo = DisplayBusStopRepository(session)
+
+        names = set()
         stop_mapping = {}
 
         with open(csv_path, "r", encoding="utf-8") as f:
@@ -33,6 +40,11 @@ async def load_bus_stops(csv_path: Path, db_manager: DatabaseManager) -> dict:
                     if row["side_identifier"].strip()
                     else None
                 )
+
+                name = row["name"]
+                if name not in names:
+                    await display_repo.create(name=name, search=name)
+                    names.add(name)
 
                 stop = await repo.create(
                     code=row["code"],

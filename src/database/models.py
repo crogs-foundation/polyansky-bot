@@ -22,6 +22,23 @@ class Base(DeclarativeBase):
     pass
 
 
+class DisplayBusStop(Base):
+    __tablename__ = "display_bus_stops"
+    name: Mapped[str] = mapped_column(String(63), index=True, unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    search: Mapped[str] = mapped_column(String(1023))
+
+    stops: Mapped[List["BusStop"]] = relationship(
+        "BusStop", foreign_keys="[BusStop.name]", back_populates="display_name"
+    )
+
+    def __repr__(self) -> str:
+        return f"<DisplayBusStop(name='{self.name}')>"
+
+
 class BusStop(Base):
     """Bus stop model representing physical bus stations."""
 
@@ -30,8 +47,13 @@ class BusStop(Base):
     code: Mapped[str] = mapped_column(
         String(7), nullable=False, unique=True, index=True
     )  # 7-letter unique code
-    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    address: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(
+        String(63),
+        ForeignKey("display_bus_stops.name", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    address: Mapped[str] = mapped_column(String(63), nullable=False)
     address_distance: Mapped[float] = mapped_column(Float, nullable=False)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
@@ -65,9 +87,13 @@ class BusStop(Base):
         "StopSchedule", back_populates="stop", cascade="all, delete-orphan"
     )
 
+    display_name: Mapped[DisplayBusStop] = relationship(
+        "DisplayBusStop", back_populates="stops"
+    )
+
     # Ensure unique combination of name, latitude, and longitude
     __table_args__ = (
-        UniqueConstraint("name", "latitude", "longitude", name="uix_stop_location"),
+        UniqueConstraint("code", "latitude", "longitude", name="uix_stop_location"),
     )
 
     def __repr__(self) -> str:

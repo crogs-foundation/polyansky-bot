@@ -42,7 +42,7 @@ class InputMethodCallback(CallbackData, prefix="input"):
 class StopListCallback(CallbackData, prefix="stop"):
     """Callback data for bus stop selection from list."""
 
-    stop_code: str
+    stop_name: str
     field: str  # 'origin' or 'destination'
 
 

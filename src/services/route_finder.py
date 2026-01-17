@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 import loguru
 from sqlalchemy import and_, select
@@ -57,8 +57,8 @@ class RouteFinder:
 
     async def find_routes(
         self,
-        origin_code: str,
-        destination_code: str,
+        origin_name: str,
+        destination_name: str,
         departure_time: Optional[time] = None,
         max_results: int = 3,
     ) -> List[JourneyOption]:
@@ -86,14 +86,14 @@ class RouteFinder:
 
         # Step 1: Find direct routes
         direct_routes = await self._find_direct_routes(
-            origin_code, destination_code, departure_time
+            origin_name, destination_name, departure_time
         )
         results.extend(direct_routes)
 
         # Step 2: If not enough results, find routes with transfers
         if len(results) < max_results:
             transfer_routes = await self._find_routes_with_transfers(
-                origin_code, destination_code, departure_time, max_results - len(results)
+                origin_name, destination_name, departure_time, max_results - len(results)
             )
             results.extend(transfer_routes)
 
@@ -103,7 +103,7 @@ class RouteFinder:
         return results[:max_results]
 
     async def _find_direct_routes(
-        self, origin_code: str, destination_code: str, departure_time: time
+        self, origin_name: str, destination_name: str, departure_time: time
     ) -> List[JourneyOption]:
         """
         Find direct routes (no transfers) between stops.
@@ -128,9 +128,10 @@ class RouteFinder:
                 RouteStop,
                 BusRoute.name == RouteStop.route_name,
             )
+            .join(BusStop, RouteStop.bus_stop.has(code=BusStop.code))
             .where(
                 and_(
-                    RouteStop.stop_code.in_([origin_code, destination_code]),
+                    BusStop.name.in_([origin_name, destination_name]),
                     BusRoute.is_active,
                 )
             )
@@ -142,26 +143,28 @@ class RouteFinder:
         )
 
         result = await self.session.execute(stmt)
-        routes = result.scalars().all()
+        routes: Sequence[BusRoute] = result.scalars().all()
 
         journeys = []
         available_routes: list[tuple[BusRoute, StopSchedule]] = []
         for route in routes:
             # Create a mapping of stop_code to RouteStop for ordering
-            route_stop_map = {rs.stop_code: rs for rs in route.route_stops}
+            route_stop_map: dict[str, RouteStop] = {
+                rs.bus_stop.name: rs for rs in route.route_stops
+            }
 
             # Check if both stops exist in the route
             if (
-                origin_code not in route_stop_map
-                or destination_code not in route_stop_map
+                origin_name not in route_stop_map
+                or destination_name not in route_stop_map
             ):
                 loguru.logger.debug(
                     f"Route {route.name}: origin or destination not in route, skipping"
                 )
                 continue
 
-            origin_route_stop = route_stop_map[origin_code]
-            dest_route_stop = route_stop_map[destination_code]
+            origin_route_stop = route_stop_map[origin_name]
+            dest_route_stop = route_stop_map[destination_name]
 
             # Validate order: destination must come after origin
             if dest_route_stop.stop_order <= origin_route_stop.stop_order:
@@ -174,12 +177,12 @@ class RouteFinder:
             origin_schedules = [
                 stop_schedule
                 for stop_schedule in route.stop_schedules
-                if stop_schedule.stop_code == origin_code and stop_schedule.is_active
+                if stop_schedule.stop.name == origin_name and stop_schedule.is_active
             ]
             dest_schedules = [
                 stop_schedule
                 for stop_schedule in route.stop_schedules
-                if stop_schedule.stop_code == destination_code and stop_schedule.is_active
+                if stop_schedule.stop.name == destination_name and stop_schedule.is_active
             ]
 
             if not origin_schedules or not dest_schedules:
@@ -237,8 +240,8 @@ class RouteFinder:
 
     async def _find_routes_with_transfers(
         self,
-        origin_code: str,
-        destination_code: str,
+        origin_name: str,
+        destination_name: str,
         departure_time: time,
         max_results: int,
     ) -> List[JourneyOption]:
