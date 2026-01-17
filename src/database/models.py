@@ -316,3 +316,23 @@ class StopSchedule(Base):
             f"<StopSchedule(route_name={self.route_name}, stop_code={self.stop_code}, "
             f"arrival={self.arrival_time})>"
         )
+
+
+class RouteSearch(Base):
+    __tablename__ = "route_search"
+
+    telegram_user_id: Mapped[int] = mapped_column(Integer, index=True)
+    origin: Mapped[str] = mapped_column(String(63), ForeignKey("display_bus_stops.name"))
+    destination: Mapped[str] = mapped_column(
+        String(63), ForeignKey("display_bus_stops.name")
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<StopSchedule(origin={self.origin}, destination={self.destination}, "
+            f"created_at={self.created_at})>"
+        )

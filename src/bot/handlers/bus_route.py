@@ -23,6 +23,7 @@ from bot.keyboards.callbacks import (
     TimePresetCallback,
 )
 from bot.states.bus_route import BusRouteStates
+from database.repositories.bus_route_search import BusRouteSearchRepository
 from database.repositories.bus_stop import BusStopRepository
 from database.repositories.display_bus_stop import DisplayBusStopRepository
 from services.route_finder import RouteFinder
@@ -35,7 +36,10 @@ STOPS_PER_PAGE = 5
 
 @router.callback_query(RouteMenuCallback.filter(F.action == RouteAction.START_BUSES))
 async def show_route_menu(
-    callback: CallbackQuery, state: FSMContext, callback_data: RouteMenuCallback
+    callback: CallbackQuery,
+    state: FSMContext,
+    callback_data: RouteMenuCallback,
+    bus_route_search_repo: BusRouteSearchRepository,
 ):
     """
     Show initial route planning menu.
@@ -44,10 +48,15 @@ async def show_route_menu(
     """
     await state.set_state(BusRouteStates.menu)
 
+    search = await bus_route_search_repo.last(callback.from_user.id)
+    loguru.logger.debug(f"Last search of user {callback.from_user.id} is: {search}")
+
+    origin = search.origin if search else None
+    destination = search.destination if search else None
     # Initialize FSM data
     await state.update_data(
-        origin_name=None,
-        destination_name=None,
+        origin_name=origin,
+        destination_name=destination,
         departure_time="Сейчас",
         arrival_time="Как можно скорее",
     )
@@ -56,7 +65,7 @@ async def show_route_menu(
 
     await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
         text=text,
-        reply_markup=build_route_menu_keyboard(),
+        reply_markup=build_route_menu_keyboard(origin=origin, destination=destination),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -418,6 +427,7 @@ async def confirm_route(
     callback_data: RouteMenuCallback,
     route_finder: RouteFinder,
     bus_stop_repo: BusStopRepository,
+    bus_route_search_repo: BusRouteSearchRepository,
 ):
     """
     Confirm route selection and find available routes.
@@ -452,6 +462,12 @@ async def confirm_route(
             destination_name=data["destination_name"],
             departure_time=departure_time,
             max_results=3,
+        )
+
+        await bus_route_search_repo.create(
+            origin=data["origin_name"],
+            destination=data["destination_name"],
+            telegram_user_id=callback.from_user.id,
         )
 
         if not routes:

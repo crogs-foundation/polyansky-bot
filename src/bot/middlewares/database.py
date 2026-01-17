@@ -6,6 +6,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
 from database.connection import DatabaseManager
+from database.repositories.bus_route_search import BusRouteSearchRepository
 from database.repositories.bus_stop import BusStopRepository
 from database.repositories.display_bus_stop import DisplayBusStopRepository
 from services.route_finder import RouteFinder
@@ -44,5 +45,6 @@ class DatabaseMiddleware(BaseMiddleware):
             data["bus_stop_repo"] = BusStopRepository(session)
             data["display_bus_stop_repo"] = DisplayBusStopRepository(session)
             data["route_finder"] = RouteFinder(session)
+            data["bus_route_search_repo"] = BusRouteSearchRepository(session)
 
             return await handler(event, data)
