@@ -7,8 +7,10 @@ from aiogram.types import TelegramObject
 
 from database.connection import DatabaseManager
 from database.repositories.bus_route_search import BusRouteSearchRepository
+from database.repositories.bus_route_stop import BusRouteStopRepository
 from database.repositories.bus_stop import BusStopRepository
 from database.repositories.display_bus_stop import DisplayBusStopRepository
+from services.draw_route import RenderConfig, RouteDrawer
 from services.route_finder import RouteFinder
 
 
@@ -43,8 +45,12 @@ class DatabaseMiddleware(BaseMiddleware):
         async with self.db_manager.session() as session:
             # Inject repositories
             data["bus_stop_repo"] = BusStopRepository(session)
+            data["bus_route_stop_repo"] = BusRouteStopRepository(session)
             data["display_bus_stop_repo"] = DisplayBusStopRepository(session)
             data["route_finder"] = RouteFinder(session)
+            data["route_drawer"] = RouteDrawer(
+                RenderConfig(buffer_ratio=0.15, pixel_size=960, dpi=250, basemap_zoom=14)
+            )
             data["bus_route_search_repo"] = BusRouteSearchRepository(session)
 
             return await handler(event, data)

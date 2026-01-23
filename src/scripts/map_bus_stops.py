@@ -23,7 +23,7 @@ def create_bus_stop_map(csv_file="stops.csv", output_file="bus_stops_map.html"):
             reader = csv.DictReader(f, delimiter=",")
 
             # Clean up column names (strip whitespace)
-            fieldnames = [field.strip() for field in reader.fieldnames]
+            fieldnames = [field.strip() for field in reader.fieldnames or ""]
             reader = csv.DictReader(f, delimiter=",", fieldnames=fieldnames)
 
             for row in reader:

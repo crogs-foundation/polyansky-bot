@@ -22,3 +22,5 @@ class BusRouteStates(StatesGroup):
     # Time input states
     waiting_departure_time = State()
     waiting_arrival_time = State()
+
+    waiting_route_chose = State()

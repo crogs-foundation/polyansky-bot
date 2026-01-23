@@ -211,3 +211,5 @@ __marimo__/
 
 data/*.db
 *.db
+.ctx_tile_cache/*
+data/images/*

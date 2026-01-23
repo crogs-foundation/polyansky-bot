@@ -4,17 +4,20 @@ from typing import List, Optional
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from loguru import logger
 
 from bot.keyboards.callbacks import (
     InputMethod,
     InputMethodCallback,
     ListNavigationCallback,
     RouteAction,
+    RouteChooseCallback,
     RouteMenuCallback,
     StopListCallback,
     TimePresetCallback,
 )
 from database.models import DisplayBusStop
+from services.route_finder import JourneyOption
 
 
 def build_main_menu_keyboard() -> InlineKeyboardMarkup:
@@ -241,5 +244,46 @@ def build_time_preset_keyboard(field: str) -> InlineKeyboardMarkup:
         callback_data=RouteMenuCallback(action=RouteAction.BACK),  # FIXED
     )
     builder.adjust(1)
+
+    return builder.as_markup()
+
+
+def build_choose_route_keyboard(routes: list[JourneyOption]) -> InlineKeyboardMarkup:
+    """
+    Build keyboard for time selection.
+
+    Offers presets and custom input option.
+
+    Args:
+        field: 'departure' or 'arrival'.
+
+    Returns:
+        Keyboard with time options.
+    """
+    builder = InlineKeyboardBuilder()
+
+    index = 0
+
+    for route in routes:
+        for segment in route.segments:
+            index += 1
+            arrival_time = segment.arrival_time.isoformat("minutes").replace(":", "-")
+            departure_time = segment.departure_time.isoformat("minutes").replace(":", "-")
+            logger.info(arrival_time)
+            logger.info(departure_time)
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"{index}. Маршрут {segment.route_name}",
+                    callback_data=RouteChooseCallback(
+                        index=index,
+                        route_name=segment.route_name,
+                        origin_stop=segment.origin_stop.code,
+                        destination_stop=segment.destination_stop.code,
+                        arrival_time=arrival_time,
+                        departure_time=departure_time,
+                        travel_duration=int(segment.travel_duration.total_seconds() / 60),
+                    ).pack(),
+                )
+            )
 
     return builder.as_markup()

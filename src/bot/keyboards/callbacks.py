@@ -58,3 +58,15 @@ class TimePresetCallback(CallbackData, prefix="time"):
 
     field: str  # 'departure' or 'arrival'
     preset: str  # 'now' or 'asap'
+
+
+class RouteChooseCallback(CallbackData, prefix="route_choose"):
+    """Callback data for bus route selection from list."""
+
+    index: int
+    route_name: str
+    origin_stop: str
+    destination_stop: str
+    departure_time: str  # HH:MM
+    arrival_time: str  # HH:MM
+    travel_duration: int  # minutes

@@ -7,9 +7,12 @@ requires-python = ">=3.13"
 dependencies = [
     "aiogram>=3.24.0",
     "aiosqlite>=0.22.1",
+    "contextily>=1.7.0",
     "environs>=14.5.0",
-    "folium>=0.20.0",
+    "geopandas>=1.1.2",
     "loguru>=0.7.3",
+    "matplotlib>=3.10.8",
+    "pipe>=2.2",
     "rapidfuzz>=3.14.3",
     "requests>=2.32.5",
     "sqlalchemy[asyncio]>=2.0.45",
@@ -17,6 +20,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "folium>=0.20.0",
+    "polyline>=2.0.4",
     "pre-commit>=4.5.1",
     "ruff>=0.14.11",
     "ty>=0.0.10",
@@ -51,3 +56,7 @@ disable = [
     "broad-exception-caught",
     "invalid-name"
 ]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"

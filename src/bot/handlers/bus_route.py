@@ -6,9 +6,16 @@ import loguru
 from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Location, Message
+from aiogram.types import (
+    BufferedInputFile,
+    CallbackQuery,
+    InputMediaPhoto,
+    Location,
+    Message,
+)
 
 from bot.keyboards.builders import (
+    build_choose_route_keyboard,
     build_input_method_keyboard,
     build_route_menu_keyboard,
     build_stop_list_keyboard,
@@ -18,15 +25,18 @@ from bot.keyboards.callbacks import (
     InputMethodCallback,
     ListNavigationCallback,
     RouteAction,
+    RouteChooseCallback,
     RouteMenuCallback,
     StopListCallback,
     TimePresetCallback,
 )
 from bot.states.bus_route import BusRouteStates
 from database.repositories.bus_route_search import BusRouteSearchRepository
+from database.repositories.bus_route_stop import BusRouteStopRepository
 from database.repositories.bus_stop import BusStopRepository
 from database.repositories.display_bus_stop import DisplayBusStopRepository
-from services.route_finder import RouteFinder
+from services.draw_route import RouteDrawer
+from services.route_finder import JourneyOption, RouteFinder
 
 router = Router(name="bus_route")
 
@@ -457,7 +467,7 @@ async def confirm_route(
     await callback.answer("🔍 Ищем маршруты...", show_alert=False)
 
     try:
-        routes = await route_finder.find_routes(
+        routes: list[JourneyOption] = await route_finder.find_routes(
             origin_name=data["origin_name"],
             destination_name=data["destination_name"],
             departure_time=departure_time,
@@ -493,17 +503,9 @@ async def confirm_route(
             result_text += f"✅ Всего: {route.total_duration}\n"
             result_text += "━━━━━━━━━━━━━━\n\n"
 
-        await callback.message.edit_text(result_text, parse_mode="HTML")  # ty: ignore [possibly-missing-attribute]
-
-        # Send origin location on map
-        origin_stop = segment.origin_stop
-
-        await callback.message.answer_location(  # ty: ignore [possibly-missing-attribute]
-            latitude=origin_stop.latitude,
-            longitude=origin_stop.longitude,
-        )
-        await callback.message.answer(  # ty: ignore [possibly-missing-attribute]
-            f"📍 <b>Начальная остановка:</b>\n{origin_stop.name}\n",
+        await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
+            result_text,
+            reply_markup=build_choose_route_keyboard(routes),
             parse_mode="HTML",
         )
 
@@ -511,6 +513,52 @@ async def confirm_route(
         await callback.message.edit_text("❌ Ошибка при поиске маршрутов.")  # ty: ignore [possibly-missing-attribute]
         loguru.logger.warning(f"❌ Ошибка при поиске маршрутов: {str(e)}")
 
+
+@router.callback_query(RouteChooseCallback.filter())
+async def choose_route(
+    callback: CallbackQuery,
+    state: FSMContext,
+    callback_data: RouteChooseCallback,
+    route_finder: RouteFinder,
+    route_drawer: RouteDrawer,
+    bus_stop_repo: BusStopRepository,
+    bus_route_stop_repo: BusRouteStopRepository,
+):
+    await callback.answer()
+
+    route_name = callback_data.route_name
+    origin_stop = callback_data.origin_stop
+    destination_stop = callback_data.destination_stop
+    arrival_time = callback_data.arrival_time.replace("-", ":")
+    departure_time = callback_data.departure_time.replace("-", ":")
+    travel_duration = callback_data.travel_duration
+
+    await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
+        text=(
+            f"Выбран маршрут {route_name}\n"
+            f"Отправление в {departure_time}\n"
+            f"Прибытие в {arrival_time}\n"
+            f"Время в пути: {travel_duration} минут."
+        ),
+        parse_mode="HTML",
+    )
+
+    last_message = await callback.message.answer(  # ty: ignore [possibly-missing-attribute]
+        text="Генерируем карту маршрута...", parse_mode="HTML"
+    )
+
+    stops = await bus_route_stop_repo.get_stops(route_name, origin_stop, destination_stop)
+    route_map = route_drawer.render_route_map_png(
+        route_name,
+        stops=list(map(lambda item: (item.latitude, item.longitude, item.name), stops)),
+    )
+
+    file = BufferedInputFile(
+        route_map,
+        filename=f"Map of route `{route_name}` from `{stops[0].name}` to `{stops[-1].name}`.png",
+    )
+
+    await last_message.edit_media(InputMediaPhoto(media=file))
     await state.clear()
 
 
