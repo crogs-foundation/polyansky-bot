@@ -1,9 +1,11 @@
+import time as time_module
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
-from typing import List, Optional, Sequence
+from typing import Optional, Self, Sequence
 
 import loguru
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -26,7 +28,7 @@ class RouteSegment:
 class JourneyOption:
     """Complete journey from origin to destination."""
 
-    segments: List[RouteSegment]
+    segments: list[RouteSegment]
     total_duration: timedelta
     departure_time: time
     arrival_time: time
@@ -36,6 +38,22 @@ class JourneyOption:
     def is_direct(self) -> bool:
         """Check if journey has no transfers."""
         return len(self.segments) == 1
+
+    def get_key(self) -> tuple:
+        """Get unique key for deduplication."""
+        return (
+            tuple(seg.route_name for seg in self.segments),
+            self.departure_time,
+            self.arrival_time,
+        )
+
+    def __lt__(self, other: Self) -> bool:
+        return (
+            self.transfers < other.transfers
+            or self.total_duration < other.total_duration
+            or self.departure_time < other.departure_time
+            or self.arrival_time < other.arrival_time
+        )
 
 
 class RouteFinder:
@@ -55,13 +73,20 @@ class RouteFinder:
         """
         self.session = session
 
+    @contextmanager
+    def _timer(self, name: str):
+        """Context manager to time code execution."""
+        start = time_module.time()
+        yield
+        loguru.logger.debug(f"{name} took {time_module.time() - start:.2f}s")
+
     async def find_routes(
         self,
         origin_name: str,
         destination_name: str,
         departure_time: Optional[time] = None,
         max_results: int = 3,
-    ) -> List[JourneyOption]:
+    ) -> list[JourneyOption]:
         """
         Find possible routes between two stops.
 
@@ -82,161 +107,242 @@ class RouteFinder:
         if departure_time is None:
             departure_time = datetime.now().time()
 
-        results: List[JourneyOption] = []
+        results: list[JourneyOption] = []
 
         # Step 1: Find direct routes
-        direct_routes = await self._find_direct_routes(
-            origin_name, destination_name, departure_time
-        )
+        with self._timer("Direct routes search"):
+            direct_routes = await self._find_direct_routes(
+                origin_name, destination_name, departure_time
+            )
         results.extend(direct_routes)
 
         # Step 2: If not enough results, find routes with transfers
         if len(results) < max_results:
-            transfer_routes = await self._find_routes_with_transfers(
-                origin_name, destination_name, departure_time, max_results - len(results)
-            )
+            with self._timer("Transfer routes search"):
+                transfer_routes = await self._find_routes_with_transfers(
+                    origin_name,
+                    destination_name,
+                    departure_time,
+                    max_results - len(results),
+                )
             results.extend(transfer_routes)
 
-        # Sort by: transfers (fewer better), then duration
-        results.sort(key=lambda x: (x.transfers, x.total_duration))
+        results = sorted(results)
 
         return results[:max_results]
 
     async def _find_direct_routes(
         self, origin_name: str, destination_name: str, departure_time: time
-    ) -> List[JourneyOption]:
+    ) -> list[JourneyOption]:
         """
         Find direct routes (no transfers) between stops.
 
-        Strategy:
-        1. Find routes that serve both origin and destination stops
-        2. Use StopSchedule to get actual arrival times at each stop
-        3. Validate the order and timing
+        Handles routes that may visit the same stop multiple times (e.g., circular routes).
+        For each trip, we find all occurrences of origin and destination stops,
+        then consider valid pairs where destination comes after origin.
 
         Args:
-            origin_code: Origin stop ID.
-            destination_code: Destination stop ID.
+            origin_name: Origin stop name.
+            destination_name: Destination stop name.
             departure_time: Minimum departure time.
 
         Returns:
             List of direct journey options.
         """
-        # Query to find routes that have both stops
+        # Get current day of week for filtering
+        current_day = datetime.now().strftime("%A").lower()  # "monday", "tuesday", etc.
+
+        loguru.logger.debug(
+            f"Finding direct routes from '{origin_name}' to '{destination_name}' "
+            f"starting from {departure_time} on {current_day}"
+        )
+
+        # Query to find routes that contain BOTH origin and destination stops
         stmt = (
             select(BusRoute)
-            .join(
-                RouteStop,
-                BusRoute.name == RouteStop.route_name,
-            )
-            .join(BusStop, RouteStop.bus_stop.has(code=BusStop.code))
+            .join(RouteStop, BusRoute.name == RouteStop.route_name)
+            .join(BusStop, RouteStop.stop_code == BusStop.code)
             .where(
                 and_(
                     BusStop.name.in_([origin_name, destination_name]),
                     BusRoute.is_active,
                 )
             )
+            .group_by(BusRoute.id)
+            .having(func.count(func.distinct(BusStop.name)) == 2)
             .options(
                 selectinload(BusRoute.route_stops).selectinload(RouteStop.bus_stop),
                 selectinload(BusRoute.stop_schedules).selectinload(StopSchedule.stop),
             )
-            .distinct()
         )
 
-        result = await self.session.execute(stmt)
-        routes: Sequence[BusRoute] = result.scalars().all()
+        with self._timer("SQL query execution"):
+            result = await self.session.execute(stmt)
+            routes: Sequence[BusRoute] = result.scalars().all()
+
+        loguru.logger.debug(f"Found {len(routes)} routes containing both stops")
 
         journeys = []
-        available_routes: list[tuple[BusRoute, StopSchedule]] = []
+
         for route in routes:
-            # Create a mapping of stop_code to RouteStop for ordering
-            route_stop_map: dict[str, RouteStop] = {
-                rs.bus_stop.name: rs for rs in route.route_stops
+            # Early exit: Check if route has enough active schedules
+            active_schedules = [s for s in route.stop_schedules if s.is_active]
+            if len(active_schedules) < 2:
+                loguru.logger.debug(
+                    f"Route {route.name}: insufficient active schedules ({len(active_schedules)}), skipping"
+                )
+                continue
+
+            # Check if route is operational at this time (has any active schedule for today)
+            has_today_schedule = any(
+                getattr(schedule, current_day, True) for schedule in active_schedules
+            )
+            if not has_today_schedule:
+                loguru.logger.debug(
+                    f"Route {route.name}: no schedules for today ({current_day}), skipping"
+                )
+                continue
+
+            # Get all route stops for this route, preserving order
+            route_stops: list[RouteStop] = sorted(
+                route.route_stops, key=lambda rs: rs.stop_order
+            )
+
+            # Find all occurrences of origin and destination stops in this route
+            origin_indices = [
+                (i, rs)
+                for i, rs in enumerate(route_stops)
+                if rs.bus_stop.name == origin_name
+            ]
+            destination_indices = [
+                (i, rs)
+                for i, rs in enumerate(route_stops)
+                if rs.bus_stop.name == destination_name
+            ]
+
+            # If we don't have both stops, skip this route (though query should ensure this)
+            if not origin_indices or not destination_indices:
+                loguru.logger.warning(
+                    f"Route {route.name}: Query returned route but missing origin/destination occurrences"
+                )
+                continue
+
+            loguru.logger.debug(
+                f"Processing route {route.name}: "
+                f"found {len(origin_indices)} origin occurrences, "
+                f"{len(destination_indices)} destination occurrences"
+            )
+
+            # Pre-filter relevant stop codes for optimization
+            relevant_stop_codes = {
+                rs.bus_stop.code
+                for rs in route_stops
+                if rs.bus_stop.name in (origin_name, destination_name)
             }
 
-            # Check if both stops exist in the route
-            if (
-                origin_name not in route_stop_map
-                or destination_name not in route_stop_map
-            ):
-                loguru.logger.debug(
-                    f"Route {route.name}: origin or destination not in route, skipping"
-                )
-                continue
+            # Group active stop schedules by trip_id (only for relevant stops)
+            schedules_by_trip: dict[str, dict] = {}
 
-            origin_route_stop = route_stop_map[origin_name]
-            dest_route_stop = route_stop_map[destination_name]
-
-            # Validate order: destination must come after origin
-            if dest_route_stop.stop_order <= origin_route_stop.stop_order:
-                loguru.logger.debug(
-                    f"Route {route.name}: destination before origin, skipping"
-                )
-                continue
-
-            # Get stop schedules for both stops
-            origin_schedules = [
-                stop_schedule
-                for stop_schedule in route.stop_schedules
-                if stop_schedule.stop.name == origin_name and stop_schedule.is_active
-            ]
-            dest_schedules = [
-                stop_schedule
-                for stop_schedule in route.stop_schedules
-                if stop_schedule.stop.name == destination_name and stop_schedule.is_active
-            ]
-
-            if not origin_schedules or not dest_schedules:
-                loguru.logger.debug(f"Route {route.name}: missing schedules")
-                continue
-
-            available_routes.append((route, origin_schedules[-1]))
-            # Match schedules: for each origin departure, find matching destination arrival
-            # Assumption: schedules are paired (same index = same bus trip)
-            for orig_sched, dest_sched in zip(origin_schedules, dest_schedules):
-                # Filter by departure time
-                if orig_sched.arrival_time < departure_time:
+            for stop_schedule in route.stop_schedules:
+                if not stop_schedule.is_active:
                     continue
 
-                # Validate timing: destination arrival must be after origin departure
-                if dest_sched.arrival_time <= orig_sched.arrival_time:
+                # Check if this schedule is valid for today
+                if not getattr(stop_schedule, current_day, True):
                     continue
 
-                # Calculate travel duration
-                duration = self._calculate_duration(
-                    orig_sched.arrival_time,
-                    dest_sched.arrival_time,
-                )
+                # Filter by relevant stops only
+                if stop_schedule.stop.code not in relevant_stop_codes:
+                    continue
 
-                # Get the actual BusStop objects
-                origin_stop = origin_route_stop.bus_stop
-                destination_stop = dest_route_stop.bus_stop
+                trip_id = stop_schedule.trip_id
+                stop_code = stop_schedule.stop.code
 
-                segment = RouteSegment(
-                    route_name=orig_sched.route_name,
-                    origin_stop=origin_stop,
-                    destination_stop=destination_stop,
-                    departure_time=orig_sched.arrival_time,
-                    arrival_time=dest_sched.arrival_time,
-                    travel_duration=duration,
-                )
+                if trip_id not in schedules_by_trip:
+                    schedules_by_trip[trip_id] = {}
 
-                journey = JourneyOption(
-                    segments=[segment],
-                    total_duration=duration,
-                    departure_time=orig_sched.arrival_time,
-                    arrival_time=dest_sched.arrival_time,
-                    transfers=0,
-                )
-                journeys.append(journey)
-        if len(journeys) == 0:
+                schedules_by_trip[trip_id][stop_code] = stop_schedule
+
             loguru.logger.debug(
-                "No journeys found. "
-                + ";".join(
-                    f"Route {route.name}: last bus has already departed at {departed.arrival_time}"
-                    for (route, departed) in available_routes
-                )
+                f"Route {route.name}: grouped {len(schedules_by_trip)} active trips for today"
             )
-        return sorted(journeys, key=lambda item: item.departure_time)
+
+            # For each trip, find all valid origin->destination pairs
+            trips_processed = 0
+            journeys_for_route = 0
+
+            for trip_id, trip_schedules in schedules_by_trip.items():
+                trips_processed += 1
+                # Consider all possible origin->destination pairs
+                for orig_idx, origin_rs in origin_indices:
+                    for dest_idx, dest_rs in destination_indices:
+                        # Skip if destination is not after origin
+                        if dest_idx <= orig_idx:
+                            continue
+
+                        # Check if we have schedules for both specific stops in this trip
+                        origin_code = origin_rs.bus_stop.code
+                        dest_code = dest_rs.bus_stop.code
+
+                        if (
+                            origin_code not in trip_schedules
+                            or dest_code not in trip_schedules
+                        ):
+                            continue
+
+                        origin_schedule = trip_schedules[origin_code]
+                        dest_schedule = trip_schedules[dest_code]
+
+                        # Filter by departure time
+                        if origin_schedule.arrival_time < departure_time:
+                            continue
+
+                        # Validate timing: destination arrival must be after origin departure
+                        if dest_schedule.arrival_time <= origin_schedule.arrival_time:
+                            continue
+
+                        # Calculate travel duration
+                        duration = self._calculate_duration(
+                            origin_schedule.arrival_time,
+                            dest_schedule.arrival_time,
+                        )
+
+                        # Get the actual BusStop objects
+                        origin_stop = origin_rs.bus_stop
+                        destination_stop = dest_rs.bus_stop
+
+                        segment = RouteSegment(
+                            route_name=origin_schedule.route_name,
+                            origin_stop=origin_stop,
+                            destination_stop=destination_stop,
+                            departure_time=origin_schedule.arrival_time,
+                            arrival_time=dest_schedule.arrival_time,
+                            travel_duration=duration,
+                        )
+
+                        journey = JourneyOption(
+                            segments=[segment],
+                            total_duration=duration,
+                            departure_time=origin_schedule.arrival_time,
+                            arrival_time=dest_schedule.arrival_time,
+                            transfers=0,
+                        )
+                        journeys.append(journey)
+                        journeys_for_route += 1
+
+            if journeys_for_route > 0:
+                loguru.logger.info(
+                    f"Found {journeys_for_route} journey(s) for route {route.name} "
+                    f"(processed {trips_processed} trips)"
+                )
+
+        if len(journeys) == 0:
+            loguru.logger.debug("No direct journeys found")
+        else:
+            loguru.logger.info(f"Total: found {len(journeys)} direct journey(s)")
+
+        # Sort by departure time, then by arrival time for same departure
+        return journeys
 
     async def _find_routes_with_transfers(
         self,
@@ -244,7 +350,7 @@ class RouteFinder:
         destination_name: str,
         departure_time: time,
         max_results: int,
-    ) -> List[JourneyOption]:
+    ) -> list[JourneyOption]:
         """
         Find routes with one transfer.
 

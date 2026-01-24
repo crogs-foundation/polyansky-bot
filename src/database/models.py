@@ -262,6 +262,7 @@ class StopSchedule(Base):
 
     __tablename__ = "stop_schedules"
 
+    trip_id: Mapped[str] = mapped_column(String(31), nullable=False, index=True)
     route_name: Mapped[str] = mapped_column(
         String(31), ForeignKey("bus_routes.name", ondelete="CASCADE"), nullable=False
     )

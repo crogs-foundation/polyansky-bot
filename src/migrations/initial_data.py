@@ -2,6 +2,7 @@
 
 import asyncio
 import csv
+from collections import defaultdict
 from datetime import time
 from pathlib import Path
 
@@ -100,13 +101,17 @@ async def load_route_stops(
     db_manager: DatabaseManager,
     stop_mapping: dict,
     route_mapping: dict,
-):
+) -> dict[str, int]:
     """
     Load route stop configurations from CSV.
+
+    Returns:
+        dict: Mapping of route_name to number of stops on that route
     """
     async with db_manager.session() as session:
         repo = BusRouteStopRepository(session)
         route_stop_count = 0
+        stops_per_route = defaultdict(int)
 
         with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -127,8 +132,10 @@ async def load_route_stops(
                     stop_order=int(row["stop_order"]),
                 )
                 route_stop_count += 1
+                stops_per_route[route.name] += 1
 
         print(f"✓ Loaded {route_stop_count} route stop configurations from {csv_path}")
+        return dict(stops_per_route)
 
 
 async def load_route_schedules(
@@ -180,14 +187,30 @@ async def load_stop_schedules(
     db_manager: DatabaseManager,
     stop_mapping: dict,
     route_mapping: dict,
+    stops_per_route: dict[str, int],
 ):
     """
-    Load stop schedules from CSV using bulk insert.
+    Load stop schedules from CSV using bulk insert with trip_id generation.
+
+    Trip ID Generation Logic:
+    - Schedules are grouped by route and service days
+    - Within each group, schedules are ordered by arrival time
+    - Every N schedules (where N = number of stops on the route) form one trip
+    - Each trip gets a unique ID: route_name_trip_XXX
+
+    Args:
+        csv_path: Path to stop_schedules.csv
+        db_manager: Database manager instance
+        stop_mapping: Mapping of stop codes to stop objects
+        route_mapping: Mapping of route names to route objects
+        stops_per_route: Number of stops per route (from load_route_stops)
     """
     async with db_manager.session() as session:
         repo = BusStopScheduleRepository(session)
-        schedule_data = []
         skipped_count = 0
+
+        # Group schedules by route and service days for trip assignment
+        schedules_by_route_and_days = defaultdict(list)
 
         with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -218,27 +241,58 @@ async def load_stop_schedules(
                     )
                     skipped_count += 1
                     continue
+
                 service_days = (
                     int(row["service_days"]) if row.get("service_days") else 127
                 )
+                is_active = (
+                    row["is_active"].lower() == "true" if "is_active" in row else True
+                )
 
-                schedule_data.append(
+                # Group by route and service days for trip ID assignment
+                group_key = (route.name, service_days)
+                schedules_by_route_and_days[group_key].append(
                     {
                         "route_name": route.name,
                         "stop_code": stop.code,
                         "arrival_time": arrival_time,
-                        "is_active": row["is_active"].lower() == "true"
-                        if "is_active" in row
-                        else True,
+                        "is_active": is_active,
                         "service_days": service_days,
                     }
                 )
+
+        # Generate trip IDs for each group
+        schedule_data = []
+        for (route_name, service_days), schedules in schedules_by_route_and_days.items():
+            # Sort by arrival time to ensure proper trip grouping
+            schedules.sort(key=lambda x: x["arrival_time"])
+
+            # Get number of stops for this route
+            num_stops = stops_per_route.get(route_name, 1)
+
+            # Assign trip IDs
+            # Every num_stops schedules belong to the same trip
+            for idx, schedule in enumerate(schedules):
+                trip_number = (idx // num_stops) + 1
+                trip_id = f"{route_name}_trip_{trip_number:03d}"
+                schedule["trip_id"] = trip_id
+                schedule_data.append(schedule)
 
         if schedule_data:
             await repo.add_bulk(schedule_data)
             print(
                 f"✓ Loaded {len(schedule_data)} stop schedules from {csv_path} (bulk insert)"
             )
+
+            # Print trip statistics
+            trips_per_route = defaultdict(set)
+            for schedule in schedule_data:
+                trips_per_route[schedule["route_name"]].add(schedule["trip_id"])
+
+            print("  Trip statistics:")
+            for route_name in sorted(trips_per_route.keys()):
+                num_trips = len(trips_per_route[route_name])
+                print(f"    - {route_name}: {num_trips} trips")
 
         if skipped_count > 0:
             print(f"  Note: Skipped {skipped_count} invalid entries")
@@ -264,7 +318,7 @@ async def main():
         route_mapping = await load_bus_routes(data_dir / "routes.csv", db_manager)
 
         print("\n3. Loading route stop configurations...")
-        await load_route_stops(
+        stops_per_route = await load_route_stops(
             data_dir / "route_stops.csv",
             db_manager,
             stop_mapping,
@@ -286,6 +340,7 @@ async def main():
                 db_manager,
                 stop_mapping,
                 route_mapping,
+                stops_per_route,
             )
         else:
             print(f"  Note: {stop_schedules_path} not found, skipping stop schedules")

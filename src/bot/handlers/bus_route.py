@@ -499,7 +499,6 @@ async def confirm_route(
                     f"🕐 Отправление: {segment.departure_time.strftime('%H:%M')}\n"
                     f"📍 {segment.destination_stop.name}\n"
                     f"🕐 Прибытие: {segment.arrival_time.strftime('%H:%M')}\n\n"
-                    # f"⏱ Время в пути: {segment.travel_duration}\n\n"
                 )
             result_text += f"✅ Всего: {route.total_duration}\n"
             result_text += "━━━━━━━━━━━━━━\n\n"
@@ -530,15 +529,18 @@ async def choose_route(
     route_name = callback_data.route_name
     origin_stop = callback_data.origin_stop
     destination_stop = callback_data.destination_stop
-    arrival_time = callback_data.arrival_time.replace("-", ":")
     departure_time = callback_data.departure_time.replace("-", ":")
+    arrival_time = callback_data.arrival_time.replace("-", ":")
     travel_duration = callback_data.travel_duration
 
     await callback.message.edit_text(  # ty: ignore [possibly-missing-attribute]
         text=(
-            f"Выбран маршрут {route_name}\n"
-            f"Отправление в {departure_time}\n"
-            f"Прибытие в {arrival_time}\n"
+            "Ваш маршрут:"
+            f"🚌 Маршрут {route_name}\n"
+            f"📍 {origin_stop}\n\n"
+            f"🕐 Отправление:  {departure_time}\n"
+            f"📍 {destination_stop}\n\n"
+            f"🕐 Прибытие: {arrival_time}\n\n"
             f"Время в пути: {travel_duration} минут."
         ),
         parse_mode="HTML",

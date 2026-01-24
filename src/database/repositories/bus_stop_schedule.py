@@ -53,6 +53,7 @@ class BusStopScheduleRepository(BaseRepository[StopSchedule]):
             )
             stop_schedules.append(
                 StopSchedule(
+                    trip_id=data["trip_id"],
                     route_name=data["route_name"],
                     stop_code=data["stop_code"],
                     arrival_time=data["arrival_time"],
