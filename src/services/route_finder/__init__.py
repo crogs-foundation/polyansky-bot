@@ -1,8 +1,7 @@
 import time as time_module
 from contextlib import contextmanager
-from dataclasses import dataclass
-from datetime import datetime, time, timedelta
-from typing import Optional, Self, Sequence
+from datetime import datetime, time
+from typing import Optional, Sequence
 
 import loguru
 from sqlalchemy import and_, func, select
@@ -11,49 +10,8 @@ from sqlalchemy.orm import selectinload
 
 from database.models import BusRoute, BusStop, RouteStop, StopSchedule
 
-
-@dataclass
-class RouteSegment:
-    """Represents one segment of a journey."""
-
-    route_name: str
-    origin_stop: BusStop
-    destination_stop: BusStop
-    departure_time: time
-    arrival_time: time
-    travel_duration: timedelta
-
-
-@dataclass
-class JourneyOption:
-    """Complete journey from origin to destination."""
-
-    segments: list[RouteSegment]
-    total_duration: timedelta
-    departure_time: time
-    arrival_time: time
-    transfers: int
-
-    @property
-    def is_direct(self) -> bool:
-        """Check if journey has no transfers."""
-        return len(self.segments) == 1
-
-    def get_key(self) -> tuple:
-        """Get unique key for deduplication."""
-        return (
-            tuple(seg.route_name for seg in self.segments),
-            self.departure_time,
-            self.arrival_time,
-        )
-
-    def __lt__(self, other: Self) -> bool:
-        return (
-            self.transfers < other.transfers
-            or self.total_duration < other.total_duration
-            or self.departure_time < other.departure_time
-            or self.arrival_time < other.arrival_time
-        )
+from .types import JourneyOption, RouteSegment
+from .utils import calculate_duration
 
 
 class RouteFinder:
@@ -302,7 +260,7 @@ class RouteFinder:
                             continue
 
                         # Calculate travel duration
-                        duration = self._calculate_duration(
+                        duration = calculate_duration(
                             origin_schedule.arrival_time,
                             dest_schedule.arrival_time,
                         )
@@ -341,7 +299,6 @@ class RouteFinder:
         else:
             loguru.logger.info(f"Total: found {len(journeys)} direct journey(s)")
 
-        # Sort by departure time, then by arrival time for same departure
         return journeys
 
     async def _find_routes_with_transfers(
@@ -376,26 +333,3 @@ class RouteFinder:
         # For MVP, return empty list
         loguru.logger.info("Transfer routes not yet implemented")
         return []
-
-    @staticmethod
-    def _calculate_duration(start: time, end: time) -> timedelta:
-        """
-        Calculate duration between two times.
-
-        Handles midnight crossing (assumes same day or next day).
-
-        Args:
-            start: Start time.
-            end: End time.
-
-        Returns:
-            Duration as timedelta.
-        """
-        start_dt = datetime.combine(datetime.today(), start)
-        end_dt = datetime.combine(datetime.today(), end)
-
-        if end_dt < start_dt:
-            # Next day
-            end_dt += timedelta(days=1)
-
-        return end_dt - start_dt
