@@ -30,6 +30,9 @@ class DatabaseMiddleware(BaseMiddleware):
         """
         super().__init__()
         self.db_manager = db_manager
+        self.route_drawer = RouteDrawer(
+            RenderConfig(buffer_ratio=0.15, pixel_size=960, dpi=250, basemap_zoom=14)
+        )
 
     async def __call__(
         self,
@@ -48,9 +51,7 @@ class DatabaseMiddleware(BaseMiddleware):
             data["bus_route_stop_repo"] = BusRouteStopRepository(session)
             data["display_bus_stop_repo"] = DisplayBusStopRepository(session)
             data["route_finder"] = RouteFinder(session)
-            data["route_drawer"] = RouteDrawer(
-                RenderConfig(buffer_ratio=0.15, pixel_size=960, dpi=250, basemap_zoom=14)
-            )
+            data["route_drawer"] = self.route_drawer
             data["bus_route_search_repo"] = BusRouteSearchRepository(session)
 
             return await handler(event, data)

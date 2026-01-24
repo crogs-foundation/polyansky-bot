@@ -4,11 +4,13 @@ from collections import defaultdict
 import folium
 from folium import plugins
 
+from utils.get_path import create_path
+
 
 def read_stops(filename):
     """Read stops data from CSV file"""
     stops = {}
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(create_path(filename), "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
@@ -32,7 +34,7 @@ def read_stops(filename):
 def read_routes(filename):
     """Read routes data from CSV file"""
     routes = {}
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(create_path(filename), "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
@@ -63,7 +65,7 @@ def read_routes(filename):
 def read_route_stops(filename):
     """Read route stops sequence from CSV file"""
     route_sequences = defaultdict(list)
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(create_path(filename), "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
@@ -396,7 +398,7 @@ def create_map(stops, routes, route_sequences):
     </div>
     """
 
-    m.get_root().html.add_child(folium.Element(legend_html))
+    m.get_root().html.add_child(folium.Element(legend_html))  # ty:ignore [unresolved-attribute]
 
     # Add JavaScript for select/deselect all buttons and URL state persistence
     # This needs to happen after the map and layers are created
@@ -532,7 +534,7 @@ def create_map(stops, routes, route_sequences):
     </script>
     """
 
-    m.get_root().html.add_child(folium.Element(js_code))
+    m.get_root().html.add_child(folium.Element(js_code))  # ty:ignore [unresolved-attribute]
 
     return m
 

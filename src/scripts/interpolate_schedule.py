@@ -4,6 +4,8 @@ from collections import defaultdict
 
 from loguru import logger
 
+from utils.get_path import create_path
+
 
 def load_csv(filename, directory="./data"):
     """Load CSV file and return list of dictionaries"""
@@ -11,7 +13,7 @@ def load_csv(filename, directory="./data"):
     data = []
 
     try:
-        with open(filepath, "r", encoding="utf-8") as file:
+        with open(create_path(filepath), "r", encoding="utf-8") as file:
             # Read first line to get headers
             first_line = file.readline().strip()
             fieldnames = [field.strip() for field in first_line.split(",")]
@@ -35,7 +37,7 @@ def load_partial_schedule(filename, directory="./data") -> list[list[dict]]:
     filepath = os.path.join(directory, filename)
     trips = []  # List of trips, each trip is a list of stops
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(create_path(filepath), "r", encoding="utf-8") as f:
             fieldnames = f.readline().strip().split(",")
             content = f.read()
 
@@ -80,7 +82,7 @@ def save_csv(data, filename, fieldnames, directory="./data"):
     filepath = os.path.join(directory, filename)
 
     try:
-        with open(filepath, "w", newline="", encoding="utf-8") as file:
+        with open(create_path(filepath), "w", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(data)

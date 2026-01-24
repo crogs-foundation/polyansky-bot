@@ -4,6 +4,8 @@ import folium
 from folium.features import DivIcon
 from folium.plugins import MarkerCluster, MiniMap
 
+from utils.get_path import create_path
+
 
 def create_bus_stop_map(csv_file="stops.csv", output_file="bus_stops_map.html"):
     """
@@ -18,7 +20,7 @@ def create_bus_stop_map(csv_file="stops.csv", output_file="bus_stops_map.html"):
     bus_stops = []
 
     try:
-        with open(csv_file, "r", encoding="utf-8") as f:
+        with open(create_path(csv_file), "r", encoding="utf-8") as f:
             # Detect delimiter (checking for comma or semicolon)
             reader = csv.DictReader(f, delimiter=",")
 
@@ -262,7 +264,7 @@ def create_bus_stop_map(csv_file="stops.csv", output_file="bus_stops_map.html"):
         </p>
     </div>
     """.format(len(bus_stops))
-    m.get_root().html.add_child(folium.Element(title_html))
+    m.get_root().html.add_child(folium.Element(title_html))  # ty:ignore [unresolved-attribute]
 
     # Save the map
     try:

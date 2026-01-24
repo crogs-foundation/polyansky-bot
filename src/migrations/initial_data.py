@@ -14,6 +14,7 @@ from database.repositories.bus_route_stop import BusRouteStopRepository
 from database.repositories.bus_stop import BusStopRepository
 from database.repositories.bus_stop_schedule import BusStopScheduleRepository
 from database.repositories.display_bus_stop import DisplayBusStopRepository
+from utils.get_path import create_path
 
 
 async def load_bus_stops(
@@ -32,7 +33,7 @@ async def load_bus_stops(
         names = set()
         stop_mapping = {}
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 side_id = (
@@ -74,7 +75,7 @@ async def load_bus_routes(csv_path: Path, db_manager: DatabaseManager) -> dict:
         repo = BusRouteRepository(session)
         route_mapping = {}
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 route = await repo.create(
@@ -107,7 +108,7 @@ async def load_route_stops(
         repo = BusRouteStopRepository(session)
         route_stop_count = 0
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 route = route_mapping.get(row["route_name"])
@@ -142,7 +143,7 @@ async def load_route_schedules(
         repo = BusRouteScheduleRepository(session)
         schedule_count = 0
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 route = route_mapping.get(row["route_name"])
@@ -188,7 +189,7 @@ async def load_stop_schedules(
         schedule_data = []
         skipped_count = 0
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(create_path(csv_path), "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 route = route_mapping.get(row["route_name"])

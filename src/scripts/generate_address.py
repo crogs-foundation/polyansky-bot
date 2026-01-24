@@ -6,6 +6,8 @@ from math import atan2, cos, radians, sin, sqrt
 
 import requests
 
+from utils.get_path import create_path
+
 # Multiple Overpass API mirrors for redundancy
 OVERPASS_ENDPOINTS = [
     "https://overpass.kumi.systems/api/interpreter",
@@ -213,7 +215,7 @@ def process_csv_file(input_file, output_file=None, delay=1.5):
     print(f"📂 Выходной файл: {output_file}\n")
 
     # Read CSV
-    with open(input_file, "r", encoding="utf-8") as f:
+    with open(create_path(input_file), "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
         fieldnames = list(reader.fieldnames)  # ty:ignore[invalid-argument-type]
@@ -279,7 +281,7 @@ def process_csv_file(input_file, output_file=None, delay=1.5):
             row["address_dist"] = 0
 
     # Write output CSV
-    with open(output_file, "w", encoding="utf-8", newline="") as f:
+    with open(create_path(output_file), "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)

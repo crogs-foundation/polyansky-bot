@@ -4,13 +4,17 @@
 affine==2.4.0
     # via rasterio
 aiofiles==25.1.0
-    # via aiogram
+    # via
+    #   aiogram
+    #   polyansky-bot
 aiogram==3.24.0
     # via polyansky-bot
 aiohappyeyeballs==2.6.1
     # via aiohttp
 aiohttp==3.13.3
-    # via aiogram
+    # via
+    #   aiogram
+    #   polyansky-bot
 aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1

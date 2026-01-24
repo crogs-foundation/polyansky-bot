@@ -4,7 +4,6 @@ from typing import List, Optional
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from loguru import logger
 
 from bot.keyboards.callbacks import (
     InputMethod,
@@ -269,8 +268,6 @@ def build_choose_route_keyboard(routes: list[JourneyOption]) -> InlineKeyboardMa
             index += 1
             arrival_time = segment.arrival_time.isoformat("minutes").replace(":", "-")
             departure_time = segment.departure_time.isoformat("minutes").replace(":", "-")
-            logger.info(arrival_time)
-            logger.info(departure_time)
             builder.row(
                 InlineKeyboardButton(
                     text=f"{index}. Маршрут {segment.route_name}",

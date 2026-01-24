@@ -37,6 +37,7 @@ from database.repositories.bus_stop import BusStopRepository
 from database.repositories.display_bus_stop import DisplayBusStopRepository
 from services.draw_route import RouteDrawer
 from services.route_finder import JourneyOption, RouteFinder
+from utils.animated_message import AnimatedMessage
 
 router = Router(name="bus_route")
 
@@ -544,14 +545,19 @@ async def choose_route(
     )
 
     last_message = await callback.message.answer(  # ty: ignore [possibly-missing-attribute]
-        text="Генерируем карту маршрута...", parse_mode="HTML"
+        text="Генерируем карту маршрута", parse_mode="HTML"
     )
 
-    stops = await bus_route_stop_repo.get_stops(route_name, origin_stop, destination_stop)
-    route_map = route_drawer.render_route_map_png(
-        route_name,
-        stops=list(map(lambda item: (item.latitude, item.longitude, item.name), stops)),
-    )
+    async with AnimatedMessage(last_message, "Генерируем карту маршрута"):
+        stops = await bus_route_stop_repo.get_stops(
+            route_name, origin_stop, destination_stop
+        )
+        route_map = await route_drawer.render_route_map_png(
+            route_name,
+            stops=list(
+                map(lambda item: (item.latitude, item.longitude, item.name), stops)
+            ),
+        )
 
     file = BufferedInputFile(
         route_map,

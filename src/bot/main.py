@@ -11,6 +11,7 @@ from bot.config import load_config
 from bot.handlers import bus_route, common, start
 from bot.middlewares.database import DatabaseMiddleware
 from database.connection import DatabaseManager
+from utils.get_path import create_path
 
 # Configure logging
 logging.basicConfig(
@@ -18,7 +19,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler("bot.log"),
+        logging.FileHandler(create_path("logs", "bot.log")),
     ],
 )
 logger = logging.getLogger(__name__)

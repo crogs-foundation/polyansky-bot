@@ -236,7 +236,7 @@ class RouteFinder:
                     for (route, departed) in available_routes
                 )
             )
-        return journeys
+        return sorted(journeys, key=lambda item: item.departure_time)
 
     async def _find_routes_with_transfers(
         self,

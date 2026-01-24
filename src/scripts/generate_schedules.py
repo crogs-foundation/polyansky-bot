@@ -2,17 +2,19 @@ import csv
 import random
 from datetime import datetime, time, timedelta
 
+from utils.get_path import create_path
+
 
 def read_csv_file(filename):
     """Read CSV file and return list of dictionaries."""
-    with open(filename, "r", encoding="utf-8") as f:
+    with open(create_path(filename), "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
 
 def write_csv_file(filename, data, fieldnames):
     """Write data to CSV file."""
-    with open(filename, "w", encoding="utf-8", newline="") as f:
+    with open(create_path(filename), "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(data)

@@ -60,7 +60,7 @@ class TimePresetCallback(CallbackData, prefix="time"):
     preset: str  # 'now' or 'asap'
 
 
-class RouteChooseCallback(CallbackData, prefix="route_choose"):
+class RouteChooseCallback(CallbackData, prefix="rc"):
     """Callback data for bus route selection from list."""
 
     index: int
