@@ -8,7 +8,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.config import load_config
-from bot.handlers import bus_route, common, start
+from bot.handlers import admin, bus_route, common, organizations, start
 from bot.middlewares.database import DatabaseMiddleware
 from database.connection import DatabaseManager
 from utils.get_path import create_path
@@ -46,11 +46,13 @@ async def main():
     dp = Dispatcher(storage=storage)
 
     # Register middlewares
-    dp.update.middleware(DatabaseMiddleware(db_manager))
+    dp.update.middleware(DatabaseMiddleware(db_manager, config))
 
     # Register routers
-    dp.include_router(start.router)
+    dp.include_router(admin.router)
     dp.include_router(bus_route.router)
+    dp.include_router(start.router)
+    dp.include_router(organizations.router)
     dp.include_router(common.router)
 
     logger.info("Bot started")

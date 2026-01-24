@@ -31,10 +31,12 @@ from bot.keyboards.callbacks import (
     TimePresetCallback,
 )
 from bot.states.bus_route import BusRouteStates
-from database.repositories.bus_route_search import BusRouteSearchRepository
-from database.repositories.bus_route_stop import BusRouteStopRepository
-from database.repositories.bus_stop import BusStopRepository
-from database.repositories.display_bus_stop import DisplayBusStopRepository
+from database.repositories import (
+    BusRouteSearchRepository,
+    BusRouteStopRepository,
+    BusStopRepository,
+    DisplayBusStopRepository,
+)
 from services.draw_route import RouteDrawer
 from services.route_finder import JourneyOption, RouteFinder
 from utils.animated_message import AnimatedMessage

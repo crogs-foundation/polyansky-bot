@@ -188,6 +188,8 @@ class RouteDrawer:
 
         try:
             headers = {"User-Agent": self.config.user_agent}
+            if not self._session:
+                raise RuntimeError("Couldn`t get session")
             async with self._session.get(url, headers=headers) as resp:
                 resp.raise_for_status()
                 data = await resp.json()

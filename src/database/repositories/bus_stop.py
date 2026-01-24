@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from rapidfuzz import fuzz, process
 from sqlalchemy import func, select
@@ -40,7 +40,7 @@ class BusStopRepository(BaseRepository[BusStop]):
 
     async def search_by_name(
         self, query: str, limit: int = 10, offset: int = 0
-    ) -> List[BusStop]:
+    ) -> list[BusStop]:
         """
         Fuzzy search bus stops by name using rapidfuzz.
 
@@ -127,7 +127,7 @@ class BusStopRepository(BaseRepository[BusStop]):
 
     async def find_nearest(
         self, latitude: float, longitude: float, limit: int = 5
-    ) -> List[tuple[BusStop, float]]:
+    ) -> list[tuple[BusStop, float]]:
         """
         Find nearest bus stops using Haversine distance.
 

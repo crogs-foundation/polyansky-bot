@@ -1,5 +1,4 @@
 from datetime import datetime, time
-from typing import List
 
 from sqlalchemy import (
     Boolean,
@@ -31,7 +30,7 @@ class DisplayBusStop(Base):
 
     search: Mapped[str] = mapped_column(String(1023))
 
-    stops: Mapped[List["BusStop"]] = relationship(
+    stops: Mapped[list["BusStop"]] = relationship(
         "BusStop", foreign_keys="[BusStop.name]", back_populates="display_name"
     )
 
@@ -67,23 +66,23 @@ class BusStop(Base):
     )
 
     # Relationships
-    route_stops: Mapped[List["RouteStop"]] = relationship(
+    route_stops: Mapped[list["RouteStop"]] = relationship(
         "RouteStop",
         back_populates="bus_stop",
         cascade="all, delete-orphan",
         order_by="RouteStop.stop_order",
     )
-    routes_as_origin: Mapped[List["BusRoute"]] = relationship(
+    routes_as_origin: Mapped[list["BusRoute"]] = relationship(
         "BusRoute",
         foreign_keys="[BusRoute.origin_stop_code]",
         back_populates="origin_stop",
     )
-    routes_as_destination: Mapped[List["BusRoute"]] = relationship(
+    routes_as_destination: Mapped[list["BusRoute"]] = relationship(
         "BusRoute",
         foreign_keys="[BusRoute.destination_stop_code]",
         back_populates="destination_stop",
     )
-    stop_schedules: Mapped[List["StopSchedule"]] = relationship(
+    stop_schedules: Mapped[list["StopSchedule"]] = relationship(
         "StopSchedule", back_populates="stop", cascade="all, delete-orphan"
     )
 
@@ -135,13 +134,13 @@ class BusRoute(Base):
         foreign_keys=[destination_stop_code],
         back_populates="routes_as_destination",
     )
-    route_stops: Mapped[List["RouteStop"]] = relationship(
+    route_stops: Mapped[list["RouteStop"]] = relationship(
         "RouteStop", back_populates="route", cascade="all, delete-orphan"
     )
-    schedules: Mapped[List["RouteSchedule"]] = relationship(
+    schedules: Mapped[list["RouteSchedule"]] = relationship(
         "RouteSchedule", back_populates="route", cascade="all, delete-orphan"
     )
-    stop_schedules: Mapped[List["StopSchedule"]] = relationship(
+    stop_schedules: Mapped[list["StopSchedule"]] = relationship(
         "StopSchedule", back_populates="route", cascade="all, delete-orphan"
     )
 
@@ -334,6 +333,33 @@ class RouteSearch(Base):
 
     def __repr__(self) -> str:
         return (
-            f"<StopSchedule(origin={self.origin}, destination={self.destination}, "
+            f"<RouteSearch(origin={self.origin}, destination={self.destination}, "
             f"created_at={self.created_at})>"
+        )
+
+
+class OrganizationCategory(Base):
+    __tablename__ = "organization_category"
+
+    name: Mapped[str] = mapped_column(String(255), index=True, unique=True)
+
+    def __repr__(self) -> str:
+        return f"<OrganizationCategory(name={self.name}>"
+
+
+class Organization(Base):
+    __tablename__ = "organization"
+
+    category: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("organization_category.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    name: Mapped[str] = mapped_column(String(127))
+    address: Mapped[str] = mapped_column(String(255))
+    phone: Mapped[str] = mapped_column(String(11), nullable=True)
+
+    def __repr__(self) -> str:
+        return (
+            f"<Organization(name={self.name}, address={self.address}, phone={self.phone}>"
         )

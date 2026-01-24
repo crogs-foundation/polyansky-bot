@@ -240,10 +240,10 @@ def create_bus_stop_map(csv_file="stops.csv", output_file="bus_stops_map.html"):
     folium.LayerControl().add_to(m)
 
     # Add fullscreen button
-    folium.plugins.Fullscreen().add_to(m)
+    folium.plugins.Fullscreen().add_to(m)  # ty:ignore [possibly-missing-attribute]
 
     # Add measure control
-    folium.plugins.MeasureControl(
+    folium.plugins.MeasureControl(  # ty:ignore [possibly-missing-attribute]
         position="topleft",
         primary_length_unit="meters",
         secondary_length_unit="kilometers",

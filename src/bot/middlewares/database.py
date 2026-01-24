@@ -5,11 +5,16 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
+from bot.config import Config
 from database.connection import DatabaseManager
-from database.repositories.bus_route_search import BusRouteSearchRepository
-from database.repositories.bus_route_stop import BusRouteStopRepository
-from database.repositories.bus_stop import BusStopRepository
-from database.repositories.display_bus_stop import DisplayBusStopRepository
+from database.repositories import (
+    BusRouteSearchRepository,
+    BusRouteStopRepository,
+    BusStopRepository,
+    DisplayBusStopRepository,
+    OrganizationCategoryRepository,
+    OrganizationRepository,
+)
 from services.draw_route import RenderConfig, RouteDrawer
 from services.route_finder import RouteFinder
 
@@ -21,7 +26,7 @@ class DatabaseMiddleware(BaseMiddleware):
     Provides clean dependency injection pattern.
     """
 
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(self, db_manager: DatabaseManager, config: Config):
         """
         Initialize middleware.
 
@@ -30,6 +35,7 @@ class DatabaseMiddleware(BaseMiddleware):
         """
         super().__init__()
         self.db_manager = db_manager
+        self.config = config
         self.route_drawer = RouteDrawer(
             RenderConfig(buffer_ratio=0.15, pixel_size=960, dpi=250, basemap_zoom=14)
         )
@@ -53,5 +59,8 @@ class DatabaseMiddleware(BaseMiddleware):
             data["route_finder"] = RouteFinder(session)
             data["route_drawer"] = self.route_drawer
             data["bus_route_search_repo"] = BusRouteSearchRepository(session)
+            data["organization_category_repo"] = OrganizationCategoryRepository(session)
+            data["organization_repo"] = OrganizationRepository(session)
+            data["config"] = self.config
 
             return await handler(event, data)

@@ -24,3 +24,12 @@ class BusRouteStates(StatesGroup):
     waiting_arrival_time = State()
 
     waiting_route_chose = State()
+
+
+class OrganizationStates(StatesGroup):
+    """States for organization selection flow."""
+
+    main_menu = State()
+    category_selection = State()
+    organization_selection = State()
+    organization_details = State()

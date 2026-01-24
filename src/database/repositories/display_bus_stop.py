@@ -1,5 +1,3 @@
-from typing import List
-
 from rapidfuzz import fuzz, process
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +45,7 @@ class DisplayBusStopRepository(BaseRepository[DisplayBusStop]):
 
     async def search_by_name(
         self, query: str, limit: int = 10, offset: int = 0
-    ) -> List[DisplayBusStop]:
+    ) -> list[DisplayBusStop]:
         """
         Fuzzy search bus stops by name using rapidfuzz.
 
@@ -71,7 +69,7 @@ class DisplayBusStopRepository(BaseRepository[DisplayBusStop]):
         query = query.strip()
 
         # Get all active bus stops (consider adding caching for production)
-        all_stops: List[DisplayBusStop] = list(
+        all_stops: list[DisplayBusStop] = list(
             (await self.session.execute(select(DisplayBusStop))).scalars().all()
         )
 

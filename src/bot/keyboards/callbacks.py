@@ -8,6 +8,7 @@ from aiogram.filters.callback_data import CallbackData
 class RouteAction(str, Enum):
     """Actions available in route planning menu."""
 
+    MAIN_MENU = "main_menu"
     START_BUSES = "start_buses"
     EDIT_ORIGIN = "origin"
     EDIT_DESTINATION = "destination"
@@ -15,7 +16,8 @@ class RouteAction(str, Enum):
     EDIT_ARRIVAL = "arrival"
     CONFIRM = "confirm"
     CANCEL = "cancel"
-    BACK = "back"  # NEW: For back navigation
+    BACK = "back"
+    START_ORGANIZATIONS = "start_organizations"  # NEW
 
 
 class InputMethod(str, Enum):
@@ -24,6 +26,20 @@ class InputMethod(str, Enum):
     LOCATION = "location"  # Send location on map
     LIST = "list"  # Choose from paginated list
     SEARCH = "search"  # Type to search
+
+
+# NEW: Organization actions and callbacks
+class OrganizationAction(str, Enum):
+    """Actions for organization menu."""
+
+    SHOW_CATEGORIES = "show_categories"
+    SHOW_ORGANIZATIONS = "show_organizations"
+    SELECT_CATEGORY = "select_category"
+    SELECT_ORGANIZATION = "select_organization"
+    BACK = "back"
+    SEARCH = "search"
+    NEXT_PAGE = "next_page"
+    PREV_PAGE = "prev_page"
 
 
 class RouteMenuCallback(CallbackData, prefix="route"):
@@ -70,3 +86,44 @@ class RouteChooseCallback(CallbackData, prefix="rc"):
     departure_time: str  # HH:MM
     arrival_time: str  # HH:MM
     travel_duration: int  # minutes
+
+
+# NEW: Organization callbacks
+class OrganizationMenuCallback(CallbackData, prefix="org_menu"):
+    """Callback for organization main menu."""
+
+    action: OrganizationAction
+    page: int = 0
+    category_id: int | None = None
+
+
+class CategoryListCallback(CallbackData, prefix="category"):
+    """Callback for category selection."""
+
+    category_id: int
+    page: int = 0
+
+
+class OrganizationListCallback(CallbackData, prefix="organization"):
+    """Callback for organization selection."""
+
+    organization_id: int
+    page: int = 0
+    category_id: int | None = None
+
+
+class AdminAction(str, Enum):
+    """Actions for admin menu."""
+
+    ADD_CATEGORY = "add_category"
+    ADD_ORGANIZATION = "add_organization"
+    CONFIRM_CATEGORY = "confirm_category"
+    CONFIRM_ORGANIZATION = "confirm_organization"
+    CANCEL = "cancel"
+
+
+# Добавить новый callback:
+class AdminCallback(CallbackData, prefix="admin"):
+    """Callback data for admin actions."""
+
+    action: AdminAction
