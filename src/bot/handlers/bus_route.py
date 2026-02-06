@@ -43,6 +43,8 @@ from utils.animated_message import AnimatedMessage
 
 router = Router(name="bus_route")
 
+logger = loguru.logger.bind(name=__name__)
+
 # Constants
 STOPS_PER_PAGE = 5
 
@@ -62,7 +64,7 @@ async def show_route_menu(
     await state.set_state(BusRouteStates.menu)
 
     search = await bus_route_search_repo.last(callback.from_user.id)
-    loguru.logger.debug(f"Last search of user {callback.from_user.id} is: {search}")
+    logger.debug(f"Last search of user {callback.from_user.id} is: {search}")
 
     origin = search.origin if search else None
     destination = search.destination if search else None
@@ -201,7 +203,6 @@ async def show_stop_list(
 ):
     """Show paginated list of all bus stops."""
     field = callback_data.field
-
     # Set appropriate state
     if field == "origin":
         await state.set_state(BusRouteStates.waiting_origin_list)
@@ -513,7 +514,7 @@ async def confirm_route(
 
     except Exception as e:
         await callback.message.edit_text("❌ Ошибка при поиске маршрутов.")  # ty: ignore [possibly-missing-attribute]
-        loguru.logger.warning(f"❌ Ошибка при поиске маршрутов: {str(e)}")
+        logger.error(f"❌ Ошибка при поиске маршрутов: {str(e)}")
 
 
 @router.callback_query(RouteChooseCallback.filter())
@@ -556,6 +557,7 @@ async def choose_route(
         stops = await bus_route_stop_repo.get_stops(
             route_name, origin_stop, destination_stop
         )
+        logger.debug(f"{stops=}")
         route_map = await route_drawer.render_route_map_png(
             route_name,
             stops=list(

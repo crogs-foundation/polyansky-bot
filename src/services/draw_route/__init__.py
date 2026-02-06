@@ -10,12 +10,14 @@ import aiofiles.os
 import aiohttp
 import contextily as ctx
 import geopandas as gpd
+import loguru
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
-from loguru import logger
 from shapely.geometry import LineString, Point
 
 from utils.get_path import create_path
+
+logger = loguru.logger.bind(name=__name__)
 
 MapIndex = tuple[str, str, str]  # (route_name, first_stop, last_stop)
 LatLonName = tuple[float, float, str]  # (lat, lon, name)
@@ -446,7 +448,7 @@ class RouteDrawer:
             PNG image data as bytes
         """
         logger.info("Starting route map rendering")
-
+        logger.debug(f"{stops=}")
         self._validate_stops(stops)
 
         # Check cache

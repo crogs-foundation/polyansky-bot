@@ -296,7 +296,7 @@ def build_choose_route_keyboard(routes: list[JourneyOption]) -> InlineKeyboardMa
                     text=f"{index}. Маршрут {segment.route_name}",
                     callback_data=RouteChooseCallback(
                         index=index,
-                        route_name=segment.route_name,
+                        route_name=segment.route_name if len(segment.route_name) < 12 else segment.route_name[:12],
                         origin_stop=segment.origin_stop.code,
                         destination_stop=segment.destination_stop.code,
                         arrival_time=arrival_time,

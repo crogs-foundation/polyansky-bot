@@ -1,3 +1,4 @@
+import loguru
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -5,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from database.models import BusStop, RouteStop
 from database.repositories.base import BaseRepository
 
+logger = loguru.logger.bind(name=__name__)
 
 class BusRouteStopRepository(BaseRepository[RouteStop]):
     """Repository for bus schedule CRUD"""
@@ -35,6 +37,7 @@ class BusRouteStopRepository(BaseRepository[RouteStop]):
         origin_stop: str | None = None,
         destination_stop: str | None = None,
     ) -> list[BusStop]:
+        logger.debug(f"Get stops args: {route_name=}, {origin_stop=}, {destination_stop=}")
         all_route_stops = list(
             (
                 await self.session.execute(
@@ -48,6 +51,8 @@ class BusRouteStopRepository(BaseRepository[RouteStop]):
             .scalars()
             .all()
         )
+
+        logger.debug(f"{all_route_stops=}")
 
         stops = []
         reached_first = False
@@ -65,4 +70,5 @@ class BusRouteStopRepository(BaseRepository[RouteStop]):
             if route_stop.stop_code == destination_stop:
                 break
 
+        logger.debug(f"{stops=}")
         return stops

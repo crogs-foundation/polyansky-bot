@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import sys
 
 from aiogram import Bot, Dispatcher
@@ -7,22 +6,32 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
+from loguru import logger
+
 from bot.config import load_config
 from bot.handlers import admin, bus_route, common, organizations, start
 from bot.middlewares.database import DatabaseMiddleware
 from database.connection import DatabaseManager
 from utils.get_path import create_path
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(create_path("logs", "bot.log")),
-    ],
+logger.remove()
+
+# Add console handler
+logger.add(
+    sys.stdout,
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> - <cyan>{name}</cyan> - <level>{level}</level> - <level>{message}</level>",
+    level="INFO",
+    colorize=True  # Loguru supports colored output
 )
-logger = logging.getLogger(__name__)
+
+# Add file handler
+logger.add(
+    create_path("logs", "bot.log"),
+    format="{time:YYYY-MM-DD HH:mm:ss} - {name} - {level} - {message}",
+    level="DEBUG",
+    rotation="10 MB",  # Optional: rotate when file reaches 10 MB
+    retention="30 days"  # Optional: keep logs for 30 days
+)
 
 
 async def main():

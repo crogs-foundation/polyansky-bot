@@ -1,6 +1,6 @@
 """Common handlers for error handling and utility commands."""
 
-import logging
+import loguru
 
 from aiogram import F, Router
 from aiogram.filters import ExceptionTypeFilter
@@ -12,7 +12,7 @@ from bot.keyboards.callbacks import RouteAction, RouteMenuCallback
 from bot.states.bus_route import BusRouteStates
 
 router = Router(name="common")
-logger = logging.getLogger(__name__)
+logger = loguru.logger.bind(name=__name__)
 
 
 @router.callback_query(F.data == "cancel")

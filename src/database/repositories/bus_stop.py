@@ -1,11 +1,15 @@
 from typing import Optional
 
+import loguru
+
 from rapidfuzz import fuzz, process
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import BusStop
 from database.repositories.base import BaseRepository
+
+logger = loguru.logger.bind(name=__name__)
 
 
 class BusStopRepository(BaseRepository[BusStop]):
@@ -31,12 +35,19 @@ class BusStopRepository(BaseRepository[BusStop]):
         Returns:
             List of bus stops ordered by name.
         """
+        logger.debug(f"{limit=}, {offset=}")
         query = select(self.model).order_by(BusStop.name.asc()).offset(offset)
         if limit is not None:
             query = query.limit(limit)
 
         result = await self.session.execute(query)
-        return list(result.scalars().all())
+        results = list(result.scalars().all())
+
+        logger.debug(f"{results=}")
+        if len(results) == 0:
+            logger.warning("Found 0 bus stops in database")
+
+        return results
 
     async def search_by_name(
         self, query: str, limit: int = 10, offset: int = 0
